@@ -1,0 +1,56 @@
+libde265.so.0 libde265-0 #MINVER#
+ (optional|c++|regex)"^std::vector<int, std::allocator<int> >::.*@Base$" 0.8
+ de265_change_framerate@Base 0.8
+ de265_decode@Base 0.8
+ de265_decode_data@Base 0.8
+ de265_disable_logging@Base 0.8
+ de265_flush_data@Base 0.8
+ de265_free@Base 0.8
+ de265_free_decoder@Base 0.8
+ de265_get_chroma_format@Base 0.8
+ de265_get_current_TID@Base 0.8
+ de265_get_default_image_allocation_functions@Base 0.8
+ de265_get_error_text@Base 0.8
+ de265_get_highest_TID@Base 0.8
+ de265_get_image_NAL_header@Base 0.8
+ de265_get_image_PTS@Base 0.8
+ de265_get_image_height@Base 0.8
+ de265_get_image_plane@Base 0.8
+ de265_get_image_plane_user_data@Base 0.8
+ de265_get_image_user_data@Base 0.8
+ de265_get_image_width@Base 0.8
+ de265_get_next_picture@Base 0.8
+ de265_get_number_of_NAL_units_pending@Base 0.8
+ de265_get_number_of_input_bytes_pending@Base 0.8
+ de265_get_parameter_bool@Base 0.8
+ de265_get_version@Base 0.8
+ de265_get_version_number@Base 0.8
+ de265_get_warning@Base 0.8
+ de265_init@Base 0.8
+ de265_isOK@Base 0.8
+ de265_new_decoder@Base 0.8
+ de265_peek_next_picture@Base 0.8
+ de265_push_NAL@Base 0.8
+ de265_push_data@Base 0.8
+ de265_push_end_of_NAL@Base 0.8
+ de265_push_end_of_frame@Base 0.9
+ de265_release_next_picture@Base 0.8
+ de265_reset@Base 0.8
+ de265_set_framerate_ratio@Base 0.8
+ de265_set_image_allocation_functions@Base 0.8
+ de265_set_image_plane@Base 0.8
+ de265_set_image_user_data@Base 0.9
+ de265_set_limit_TID@Base 0.8
+ de265_set_parameter_bool@Base 0.8
+ de265_set_parameter_int@Base 0.8
+ de265_set_verbosity@Base 0.8
+ de265_start_worker_threads@Base 0.8
+ (optional=only used internally by sherlock265)draw_CB_grid@Base 0.8
+ (optional=only used internally by sherlock265)draw_Motion@Base 0.8
+ (optional=only used internally by sherlock265)draw_PB_grid@Base 0.8
+ (optional=only used internally by sherlock265)draw_PB_pred_modes@Base 0.8
+ (optional=only used internally by sherlock265)draw_QuantPY@Base 0.8
+ (optional=only used internally by sherlock265)draw_Slices@Base 0.8
+ (optional=only used internally by sherlock265)draw_TB_grid@Base 0.8
+ (optional=only used internally by sherlock265)draw_Tiles@Base 0.8
+ (optional=only used internally by sherlock265)draw_intra_pred_modes@Base 0.8
