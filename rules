@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with autoreconf --parallel
+
+override_dh_auto_install:
+	dh_auto_install
+	cd $(CURDIR)/debian/tmp/usr/bin/ && mv dec265 libde265-dec265
+	if [ -e "$(CURDIR)/debian/tmp/usr/bin/sherlock265" ]; then \
+		cd $(CURDIR)/debian/tmp/usr/bin/ && mv sherlock265 \
+			libde265-sherlock265; \
+	fi
+
+override_dh_strip:
+	dh_strip -plibde265-0 --dbg-package=libde265-dbg
+	dh_strip --remaining-packages

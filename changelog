@@ -1,0 +1,16 @@
+libde265 (0.9-1) unstable; urgency=low
+
+  * Updated symbols to make all "std::vector" symbols optional.
+  * Imported Upstream version 0.9
+  * Removed deprecated patch to update symbols visibility. Changes were
+    applied upstream.
+  * Upstream supports compiling against Qt5, prefer that over Qt4.
+  * Added new symbols from new upstream release.
+
+ -- Joachim Bauch <bauch@struktur.de>  Tue, 16 Sep 2014 18:47:14 +0200
+
+libde265 (0.8-1) unstable; urgency=low
+
+  * Initial release. (Closes: #744190)
+
+ -- Joachim Bauch <bauch@struktur.de>  Fri, 08 Aug 2014 17:23:37 +0200
