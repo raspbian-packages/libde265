@@ -148,9 +148,9 @@ case $target_cpu in
     if test x"$disable_arm" != x"yes"; then
       AC_DEFINE(HAVE_ARM, 1, [Support ARM instructions])
 
-      AX_CHECK_COMPILE_FLAG(-mfpu=neon, [
-          AC_DEFINE(HAVE_NEON, 1, [Support ARM NEON instructions])
-          ax_cv_support_neon_ext=yes], [])
+      #AX_CHECK_COMPILE_FLAG(-mfpu=neon, [
+      #    AC_DEFINE(HAVE_NEON, 1, [Support ARM NEON instructions])
+      #    ax_cv_support_neon_ext=yes], [])
 
       AC_ARG_ENABLE(thumb,
                     [AS_HELP_STRING([--enable-thumb],
