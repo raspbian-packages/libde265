@@ -4,7 +4,7 @@ Description: Only export symbols defined in the decoder API.
 Author: Joachim Bauch <bauch@struktur.de>
 --- a/libde265/encoder/Makefile.am
 +++ b/libde265/encoder/Makefile.am
-@@ -9,6 +9,18 @@
+@@ -10,6 +10,18 @@
    encpicbuf.h encpicbuf.cc \
    sop.h sop.cc
  
@@ -25,8 +25,8 @@ Author: Joachim Bauch <bauch@struktur.de>
  
 --- a/libde265/encoder/algo/Makefile.am
 +++ b/libde265/encoder/algo/Makefile.am
-@@ -15,5 +15,13 @@
-   tb-intrapredmode.h tb-intrapredmode.cc \
+@@ -17,5 +17,13 @@
+   tb-rateestim.h tb-rateestim.cc \
    pb-mv.h pb-mv.cc
  
 +libde265_encoder_algo_la_CXXFLAGS += \
@@ -54,8 +54,8 @@ Author: Joachim Bauch <bauch@struktur.de>
  # Checks for header files.
 --- a/libde265/image-io.cc
 +++ b/libde265/image-io.cc
-@@ -165,7 +165,7 @@
- 
+@@ -183,7 +183,7 @@
+ }
  
  
 -LIBDE265_API PacketSink_File::~PacketSink_File()
@@ -63,7 +63,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  {
    if (mFH) {
      fclose(mFH);
-@@ -173,7 +173,7 @@
+@@ -191,7 +191,7 @@
  }
  
  
@@ -72,7 +72,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  {
    assert(mFH==NULL);
  
-@@ -181,7 +181,7 @@
+@@ -199,7 +199,7 @@
  }
  
  
@@ -87,9 +87,9 @@ Author: Joachim Bauch <bauch@struktur.de>
  class ImageSource
  {
   public:
--  LIBDE265_API ImageSource() { }
+-  LIBDE265_API ImageSource();
 -  virtual LIBDE265_API ~ImageSource() { }
-+  ImageSource() { }
++  ImageSource();
 +  virtual ~ImageSource() { }
  
    //enum ImageStatus { Available, Waiting, EndOfVideo };
@@ -111,9 +111,9 @@ Author: Joachim Bauch <bauch@struktur.de>
  class ImageSource_YUV : public ImageSource
  {
   public:
-- LIBDE265_API ImageSource_YUV() : mFH(NULL) { }
+-  LIBDE265_API ImageSource_YUV();
 -  virtual LIBDE265_API ~ImageSource_YUV();
-+  ImageSource_YUV() : mFH(NULL) { }
++  ImageSource_YUV();
 +  virtual ~ImageSource_YUV();
  
 -  bool LIBDE265_API set_input_file(const char* filename, int w,int h);
@@ -132,7 +132,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  
   private:
    FILE* mFH;
-@@ -75,20 +75,20 @@
+@@ -74,20 +74,20 @@
  class ImageSink
  {
   public:
@@ -159,7 +159,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  
   private:
    FILE* mFH;
-@@ -99,21 +99,21 @@
+@@ -98,21 +98,21 @@
  class PacketSink
  {
   public:
@@ -174,9 +174,9 @@ Author: Joachim Bauch <bauch@struktur.de>
  class PacketSink_File : public PacketSink
  {
   public:
-- LIBDE265_API PacketSink_File() : mFH(NULL) { }
+-  LIBDE265_API PacketSink_File();
 -  virtual LIBDE265_API ~PacketSink_File();
-+  PacketSink_File() : mFH(NULL) { }
++  PacketSink_File();
 +  virtual ~PacketSink_File();
  
 -  LIBDE265_API void set_filename(const char* filename);
@@ -189,7 +189,7 @@ Author: Joachim Bauch <bauch@struktur.de>
    FILE* mFH;
 --- a/libde265/configparam.h
 +++ b/libde265/configparam.h
-@@ -94,7 +94,7 @@
+@@ -95,7 +95,7 @@
    bool hasLongOption() const { return true; } //mLongOption!=NULL; }
    std::string getLongOption() const { return mLongOption ? std::string(mLongOption) : get_name(); }
  
@@ -198,16 +198,16 @@ Author: Joachim Bauch <bauch@struktur.de>
  
  
  
-@@ -131,7 +131,7 @@
+@@ -132,7 +132,7 @@
    virtual std::string get_default_string() const { return default_value ? "true":"false"; }
  
-   virtual std::string getTypeDescr() const { return "boolean"; }
--  virtual LIBDE265_API bool processCmdLineArguments(char** argv, int* argc, int idx) { value=true; return true; }
-+  virtual bool processCmdLineArguments(char** argv, int* argc, int idx) { value=true; return true; }
+   virtual std::string getTypeDescr() const { return "(boolean)"; }
+-  virtual LIBDE265_API bool processCmdLineArguments(char** argv, int* argc, int idx) { set(true); return true; }
++  virtual bool processCmdLineArguments(char** argv, int* argc, int idx) { set(true); return true; }
  
    bool set(bool v) { value_set=true; value=v; return true; }
  
-@@ -161,10 +161,10 @@
+@@ -162,10 +162,10 @@
    virtual bool has_default() const { return default_set; }
  
    void set_default(std::string v) { default_value=v; default_set=true; }
@@ -221,7 +221,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  
    bool set(std::string v) { value_set=true; value=v; return true; }
  
-@@ -200,10 +200,10 @@
+@@ -201,10 +201,10 @@
    virtual bool has_default() const { return default_set; }
  
    void set_default(int v) { default_value=v; default_set=true; }
@@ -235,7 +235,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  
    bool set(int v) {
      if (is_valid(v)) { value_set=true; value=v; return true; }
-@@ -238,7 +238,7 @@
+@@ -239,7 +239,7 @@
    virtual std::vector<std::string> get_choice_names() const = 0;
  
    virtual std::string getTypeDescr() const;
@@ -244,7 +244,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  
    const char** get_choices_string_table() const;
  
-@@ -367,10 +367,10 @@
+@@ -368,10 +368,10 @@
   config_parameters() : param_string_table(NULL) { }
    ~config_parameters() { delete[] param_string_table; }
  

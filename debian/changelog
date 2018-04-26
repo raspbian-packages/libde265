@@ -1,9 +1,26 @@
-libde265 (1.0.2-2+rpi1) stretch-staging; urgency=medium
+libde265 (1.0.3-1+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Mon, 25 Jan 2016 01:25:24 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 26 Apr 2018 05:53:11 +0000
+
+libde265 (1.0.3-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/copyright: Use https protocol in Format field
+  * d/control: Set Vcs-* to salsa.debian.org
+
+  [ Felipe Sateler ]
+  * Change maintainer address to debian-multimedia@lists.debian.org
+
+  [ Joachim Bauch ]
+  * Imported Upstream version 1.0.3
+  * Update patches for new upstream version.
+  * Update symbols for new upstream version.
+  * Update standards version and switch to debhelper 10.
+
+ -- Joachim Bauch <bauch@struktur.de>  Thu, 19 Apr 2018 11:44:40 +0200
 
 libde265 (1.0.2-2) unstable; urgency=low
 

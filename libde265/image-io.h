@@ -30,7 +30,7 @@
 class ImageSource
 {
  public:
-  ImageSource() { }
+  ImageSource();
   virtual ~ImageSource() { }
 
   //enum ImageStatus { Available, Waiting, EndOfVideo };
@@ -48,7 +48,7 @@ class ImageSource
 class ImageSource_YUV : public ImageSource
 {
  public:
-  ImageSource_YUV() : mFH(NULL) { }
+  ImageSource_YUV();
   virtual ~ImageSource_YUV();
 
   bool set_input_file(const char* filename, int w,int h);
@@ -68,7 +68,6 @@ class ImageSource_YUV : public ImageSource
 
   de265_image* read_next_image();
 };
-
 
 
 
@@ -108,7 +107,7 @@ class PacketSink
 class PacketSink_File : public PacketSink
 {
  public:
-  PacketSink_File() : mFH(NULL) { }
+  PacketSink_File();
   virtual ~PacketSink_File();
 
   void set_filename(const char* filename);
