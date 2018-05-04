@@ -306,6 +306,8 @@ class decoder_context : public base_context {
   /* */ pic_parameter_set* get_pps(int id)       { return pps[id].get(); }
   const pic_parameter_set* get_pps(int id) const { return pps[id].get(); }
 
+  std::shared_ptr<const pic_parameter_set> get_shared_pps(int id) { return pps[id]; }
+
   /*
   const slice_segment_header* get_SliceHeader_atCtb(int ctb) {
     return img->slices[img->get_SliceHeaderIndex_atIndex(ctb)];
