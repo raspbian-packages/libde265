@@ -1,11 +1,14 @@
 libde265.so.0 libde265-0 #MINVER#
+* Build-Depends-Package: libde265-dev
  (optional|c++|regex)"^std::_Sp_counted_base<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::_Sp_counted_ptr<.*@Base$" 1.0.3
+ (optional|c++|regex)"^std::_Sp_make_shared_tag.*@Base$" 1.0.4
  (optional|c++|regex)"^std::__cxx11::basic_string<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::__cxx11::basic_stringbuf<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::vector<.*@Base$" 1.0.2
  (optional|c++|regex)"^typeinfo for std::.*@Base$" 1.0.2
  (optional|c++|regex)"^typeinfo name for std::.*@Base$" 1.0.2
+ (optional|c++|regex)"^void std::__cxx11::basic_string<.*@Base$" 1.0.4
  (optional|c++|regex)"^void std::vector<.*@Base$" 1.0.2
  (optional=only used internally by dec265|c++)"MSE(unsigned char const*, int, unsigned char const*, int, int, int)@Base" 1.0.2
  (optional=only used internally by dec265|c++)"PSNR(double)@Base" 1.0.2

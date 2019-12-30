@@ -1,9 +1,31 @@
-libde265 (1.0.3-1+rpi1) buster-staging; urgency=medium
+libde265 (1.0.4-1+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Thu, 26 Apr 2018 05:53:11 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Mon, 30 Dec 2019 17:38:03 +0000
+
+libde265 (1.0.4-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat
+
+  [ Joachim Bauch ]
+  * Imported Upstream version 1.0.4
+  * Enable hardening.
+  * Specify Build-Depends-Package in symbols.
+  * Ignore more internal STL symbols.
+  * Bump "Standards-Version" to 4.4.1
+  * Update to debhelper compat level 12.
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Repository, Repository-
+    Browse.
+
+  [ Sebastian Ramacher ]
+  * debian/rules: Remove obsolete dh_strip override
+
+ -- Joachim Bauch <bauch@struktur.de>  Fri, 20 Dec 2019 12:17:15 +0100
 
 libde265 (1.0.3-1) unstable; urgency=medium
 
