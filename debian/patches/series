@@ -1,4 +1,4 @@
 only_export_decoder_api.patch
 disable_tools.patch
-ffmpeg_2.9.patch
+fix_exported_symbols.patch
 disable-neon.patch

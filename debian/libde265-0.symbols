@@ -3,12 +3,11 @@ libde265.so.0 libde265-0 #MINVER#
  (optional|c++|regex)"^std::_Sp_counted_base<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::_Sp_counted_ptr<.*@Base$" 1.0.3
  (optional|c++|regex)"^std::_Sp_make_shared_tag.*@Base$" 1.0.4
- (optional|c++|regex)"^std::__cxx11::basic_string<.*@Base$" 1.0.2
+ (optional|c++|regex)"^std::_Vector_base<.*@Base$" 1.0.7
  (optional|c++|regex)"^std::__cxx11::basic_stringbuf<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::vector<.*@Base$" 1.0.2
  (optional|c++|regex)"^typeinfo for std::.*@Base$" 1.0.2
  (optional|c++|regex)"^typeinfo name for std::.*@Base$" 1.0.2
- (optional|c++|regex)"^void std::__cxx11::basic_string<.*@Base$" 1.0.4
  (optional|c++|regex)"^void std::vector<.*@Base$" 1.0.2
  (optional=only used internally by dec265|c++)"MSE(unsigned char const*, int, unsigned char const*, int, int, int)@Base" 1.0.2
  (optional=only used internally by dec265|c++)"PSNR(double)@Base" 1.0.2
@@ -29,9 +28,13 @@ libde265.so.0 libde265-0 #MINVER#
  de265_get_highest_TID@Base 0.8
  de265_get_image_NAL_header@Base 0.8
  de265_get_image_PTS@Base 0.8
+ de265_get_image_colour_primaries@Base 1.0.7
+ de265_get_image_full_range_flag@Base 1.0.7
  de265_get_image_height@Base 0.8
+ de265_get_image_matrix_coefficients@Base 1.0.7
  de265_get_image_plane@Base 0.8
  de265_get_image_plane_user_data@Base 0.8
+ de265_get_image_transfer_characteristics@Base 1.0.7
  de265_get_image_user_data@Base 0.8
  de265_get_image_width@Base 0.8
  de265_get_next_picture@Base 0.8
