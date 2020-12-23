@@ -1,9 +1,18 @@
-libde265 (1.0.7-1+rpi1) bullseye-staging; urgency=medium
+libde265 (1.0.8-1+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Thu, 01 Oct 2020 22:48:29 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Wed, 23 Dec 2020 12:11:37 +0000
+
+libde265 (1.0.8-1) unstable; urgency=medium
+
+  * Update to debhelper compat level 13 and add debian/not-installed
+  * Imported Upstream version 1.0.8
+  * Remove patch applied upstream.
+  * Bump "Standards-Version" to 4.5.1
+
+ -- Joachim Bauch <bauch@struktur.de>  Wed, 16 Dec 2020 16:32:29 +0100
 
 libde265 (1.0.7-1) unstable; urgency=medium
 
