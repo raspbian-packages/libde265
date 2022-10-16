@@ -1,0 +1,85 @@
+From 7d5aeb5f11531de33f5b7ae0e768ffc50da4facb Mon Sep 17 00:00:00 2001
+From: Dirk Farin <dirk.farin@gmail.com>
+Date: Tue, 23 Feb 2021 16:29:01 +0100
+Subject: [PATCH] fill 32x32 scaling matrices
+
+---
+ libde265/sps.cc       | 25 +++++++++++++++++++++++--
+ libde265/sps.h        |  2 +-
+ libde265/transform.cc |  4 +---
+ 3 files changed, 25 insertions(+), 6 deletions(-)
+
+Index: libde265-1.0.8/libde265/sps.cc
+===================================================================
+--- libde265-1.0.8.orig/libde265/sps.cc
++++ libde265-1.0.8/libde265/sps.cc
+@@ -873,10 +873,10 @@ de265_error read_scaling_list(bitreader*
+   int dc_coeff[4][6];
+ 
+   for (int sizeId=0;sizeId<4;sizeId++) {
+-    int n = ((sizeId==3) ? 2 : 6);
++    //int n = ((sizeId==3) ? 2 : 6);
+     uint8_t scaling_list[6][32*32];
+ 
+-    for (int matrixId=0;matrixId<n;matrixId++) {
++    for (int matrixId=0 ; matrixId<6 ; matrixId += (sizeId==3 ? 3 : 1)) {
+       uint8_t* curr_scaling_list = scaling_list[matrixId];
+       int scaling_list_dc_coef;
+ 
+@@ -982,6 +982,27 @@ de265_error read_scaling_list(bitreader*
+     }
+   }
+ 
++
++  // --- fill 32x32 matrices for chroma
++
++  const position* scan = get_scan_order(3, 0 /* diag */);
++	
++  for (int matrixId=0;matrixId<6;matrixId++)
++    if (matrixId!=0 && matrixId!=3) {
++      for (int i=0;i<64;i++) {
++	int x = scan[i].x;
++	int y = scan[i].y;
++	int v = sclist->ScalingFactor_Size1[matrixId][y][x];
++
++	for (int dy=0;dy<4;dy++)
++	  for (int dx=0;dx<4;dx++) {
++	    sclist->ScalingFactor_Size3[matrixId][4*y+dy][4*x+dx] = v;
++	  }
++      }
++
++      sclist->ScalingFactor_Size3[matrixId][0][0] = sclist->ScalingFactor_Size1[matrixId][0][0];
++    }
++  
+   return DE265_OK;
+ }
+ 
+Index: libde265-1.0.8/libde265/sps.h
+===================================================================
+--- libde265-1.0.8.orig/libde265/sps.h
++++ libde265-1.0.8/libde265/sps.h
+@@ -54,7 +54,7 @@ typedef struct scaling_list_data {
+   uint8_t ScalingFactor_Size0[6][4][4];
+   uint8_t ScalingFactor_Size1[6][8][8];
+   uint8_t ScalingFactor_Size2[6][16][16];
+-  uint8_t ScalingFactor_Size3[2][32][32];
++  uint8_t ScalingFactor_Size3[6][32][32];
+ } scaling_list_data;
+ 
+ 
+Index: libde265-1.0.8/libde265/transform.cc
+===================================================================
+--- libde265-1.0.8.orig/libde265/transform.cc
++++ libde265-1.0.8/libde265/transform.cc
+@@ -504,10 +504,8 @@ void scale_coefficients_internal(thread_
+ 
+       for (int i=0;i<tctx->nCoeff[cIdx];i++) {
+         int pos = tctx->coeffPos[cIdx][i];
+-        int x = pos%nT;
+-        int y = pos/nT;
+ 
+-        const int m_x_y = sclist[x+y*nT];
++        const int m_x_y = sclist[pos];
+         const int fact = m_x_y * levelScale[qP%6] << (qP/6);
+ 
+         int64_t currCoeff  = tctx->coeffList[cIdx][i];
