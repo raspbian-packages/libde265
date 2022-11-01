@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.3.2)
 
 project (libde265
     LANGUAGES C CXX
-    VERSION 1.0.8
+    VERSION 1.0.9
 )
 
 set(CMAKE_CXX_STANDARD 11)
@@ -20,7 +20,12 @@ include (${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(GNUInstallDirs)
 include(CheckFunctionExists)
 
-find_package(SDL)
+option(ENABLE_SDL "Enable SDL" ON)
+
+if (ENABLE_SDL)
+	find_package(SDL)
+endif()
+
 find_package(Threads REQUIRED)
 
 CHECK_INCLUDE_FILE(malloc.h HAVE_MALLOC_H)
