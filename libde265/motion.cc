@@ -291,7 +291,7 @@ void generate_inter_prediction_samples(base_context* ctx,
   int    stride[3];
 
   const pic_parameter_set* pps = shdr->pps;
-  const seq_parameter_set* sps = pps->sps;
+  const seq_parameter_set* sps = &img->get_sps();
 
   const int SubWidthC  = sps->SubWidthC;
   const int SubHeightC = sps->SubHeightC;
