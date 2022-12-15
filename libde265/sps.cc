@@ -360,6 +360,16 @@ de265_error seq_parameter_set::read(error_queue* errqueue, bitreader* br)
     READ_VLC_OFFSET(log2_min_pcm_luma_coding_block_size, uvlc, 3);
     READ_VLC(log2_diff_max_min_pcm_luma_coding_block_size, uvlc);
     pcm_loop_filter_disable_flag = get_bits(br,1);
+
+    if (pcm_sample_bit_depth_luma > bit_depth_luma) {
+      errqueue->add_warning(DE265_WARNING_PCM_BITDEPTH_TOO_LARGE, false);
+      return DE265_ERROR_CODED_PARAMETER_OUT_OF_RANGE;
+    }
+
+    if (pcm_sample_bit_depth_chroma > bit_depth_chroma) {
+      errqueue->add_warning(DE265_WARNING_PCM_BITDEPTH_TOO_LARGE, false);
+      return DE265_ERROR_CODED_PARAMETER_OUT_OF_RANGE;
+    }
   }
   else {
     pcm_sample_bit_depth_luma = 0;
@@ -871,12 +881,10 @@ de265_error read_scaling_list(bitreader* br, const seq_parameter_set* sps,
     int n = ((sizeId==3) ? 2 : 6);
     uint8_t scaling_list[6][32*32];
 
+    // Note: we use a different matrixId for the second matrix of size 3 (we use '3' instead of '1').
     for (int matrixId=0;matrixId<n;matrixId++) {
       uint8_t* curr_scaling_list = scaling_list[matrixId];
       int scaling_list_dc_coef;
-
-      int canonicalMatrixId = matrixId;
-      if (sizeId==3 && matrixId==1) { canonicalMatrixId=3; }
 
 
       //printf("----- matrix %d\n",matrixId);
@@ -884,6 +892,12 @@ de265_error read_scaling_list(bitreader* br, const seq_parameter_set* sps,
       char scaling_list_pred_mode_flag = get_bits(br,1);
       if (!scaling_list_pred_mode_flag) {
         int scaling_list_pred_matrix_id_delta = get_uvlc(br);
+
+	if (sizeId==3) {
+	  // adapt to our changed matrixId for size 3
+	  scaling_list_pred_matrix_id_delta *= 3;
+	}
+
         if (scaling_list_pred_matrix_id_delta == UVLC_ERROR ||
             scaling_list_pred_matrix_id_delta > matrixId) {
           return DE265_ERROR_CODED_PARAMETER_OUT_OF_RANGE;
@@ -899,15 +913,14 @@ de265_error read_scaling_list(bitreader* br, const seq_parameter_set* sps,
             memcpy(curr_scaling_list, default_ScalingList_4x4, 16);
           }
           else {
-            if (canonicalMatrixId<3)
+            if (matrixId<3)
               { memcpy(curr_scaling_list, default_ScalingList_8x8_intra,64); }
             else
               { memcpy(curr_scaling_list, default_ScalingList_8x8_inter,64); }
           }
         }
         else {
-          // TODO: CHECK: for sizeID=3 and the second matrix, should we have delta=1 or delta=3 ?
-          if (sizeId==3) { assert(scaling_list_pred_matrix_id_delta==1); }
+          if (sizeId==3) { assert(scaling_list_pred_matrix_id_delta==3); }
 
           int mID = matrixId - scaling_list_pred_matrix_id_delta;
 

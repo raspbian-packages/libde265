@@ -1,9 +1,19 @@
-libde265 (1.0.3-1+rpi1) buster-staging; urgency=medium
+libde265 (1.0.3-1+rpi1+deb10u1) buster-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Thu, 26 Apr 2018 05:53:11 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 15 Dec 2022 22:08:54 +0000
+
+libde265 (1.0.3-1+deb10u1) buster-security; urgency=medium
+
+  * Non-maintainer upload by the LTS Security Team.
+  * Cherry-pick upstream patches for:
+    - CVE-2020-21599 (See #1014999)
+    - CVE-2021-35452, CVE-2021-36408, CVE-2021-36409, CVE-2021-36410 and
+      CVE-2021-36411 (Closes: 1014977)
+
+ -- Tobias Frost <tobi@debian.org>  Thu, 15 Dec 2022 17:40:12 +0100
 
 libde265 (1.0.3-1) unstable; urgency=medium
 
