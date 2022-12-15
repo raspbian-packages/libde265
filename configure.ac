@@ -50,9 +50,7 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
-dnl gl_VISIBILITY
-dnl : In encoder branch, we still export all library symbols :
-HAVE_VISIBILITY=0
+gl_VISIBILITY
 AM_CONDITIONAL([HAVE_VISIBILITY], [test "x$HAVE_VISIBILITY" != "x0"])
 
 # Checks for header files.
