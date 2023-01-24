@@ -1,0 +1,32 @@
+Description: fix invalid memory access after unavailable reference frame insertion 
+ Needed to avoid asan errors for the version at hand, otherwise the crash even
+ happens before the pocs triggers.
+Origin: https://github.com/strukturag/libde265/commit/ee8e09a7f6f65b7c409c7801ad64918a2925ed9b
+Reviewed-by: Tobias Frost <tobi@debian.org>
+Last-Update: 2023-01-24 <YYYY-MM-DD, last update of the meta-information, optional>
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/libde265/decctx.cc
++++ b/libde265/decctx.cc
+@@ -1648,9 +1648,8 @@
+                                                                     PocStCurrBefore[i], false);
+       RefPicSetStCurrBefore[i] = k = concealedPicture;
+ 
+-	  if (concealedPicture < picInAnyList.size()) {
+-		  picInAnyList[concealedPicture] = true;
+-	  }
++      picInAnyList.resize(dpb.size(), false); // adjust size of array to hold new picture
++      picInAnyList[concealedPicture] = true;
+ 
+       //printf("  concealed: %d\n", concealedPicture);
+     }
+@@ -1671,6 +1670,9 @@
+       int concealedPicture = generate_unavailable_reference_picture(current_sps.get(),
+                                                                     PocStCurrAfter[i], false);
+       RefPicSetStCurrAfter[i] = k = concealedPicture;
++
++
++      picInAnyList.resize(dpb.size(), false); // adjust size of array to hold new picture
+       picInAnyList[concealedPicture]=true;
+ 
+       //printf("  concealed: %d\n", concealedPicture);

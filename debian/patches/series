@@ -1,0 +1,17 @@
+only_export_decoder_api.patch
+disable_tools.patch
+ffmpeg_2.9.patch
+fix-invalid-memory-access.patch
+CVE-2020-21599.patch
+CVE-2021-35452.patch
+CVE-2021-36408.patch
+CVE-2021-36409.patch
+CVE-2021-36410.patch
+CVE-2021-36411.patch
+reject_reference_pics_from_different_sps.patch
+use_sps_from_the_image.patch
+recycle_sps_if_possible.patch
+check-4-negative-Q-value.patch
+CVE-2022-43245-fix-asan-wildpointer-apply_sao_internal.patch
+CVE-2020-21596-global-buffer-overflow.patch
+fix-use-after-free.patch
