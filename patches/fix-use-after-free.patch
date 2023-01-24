@@ -1,0 +1,89 @@
+Descriptions: Fix several use after free problems 
+ by cherry picking upstream commit. 
+Origin: https://github.com/strukturag/libde265/commit/e6a0fea0070014d21b6ca229de195b093ff8e3ad
+From e6a0fea0070014d21b6ca229de195b093ff8e3ad Mon Sep 17 00:00:00 2001
+From: Dirk Farin <farin@struktur.de>
+Date: Fri, 4 May 2018 16:30:37 +0200
+Subject: [PATCH] reference PPS from slice by shared_ptr to prevent usage after
+ deallocation
+
+---
+ libde265/decctx.h                   | 1 +
+ libde265/encoder/encoder-context.cc | 2 +-
+ libde265/motion.cc                  | 2 +-
+ libde265/slice.cc                   | 4 ++--
+ libde265/slice.h                    | 3 ++-
+ 5 files changed, 7 insertions(+), 5 deletions(-)
+
+--- a/libde265/decctx.h
++++ b/libde265/decctx.h
+@@ -306,6 +306,8 @@
+   /* */ pic_parameter_set* get_pps(int id)       { return pps[id].get(); }
+   const pic_parameter_set* get_pps(int id) const { return pps[id].get(); }
+ 
++  std::shared_ptr<const pic_parameter_set> get_shared_pps(int id) { return pps[id]; }
++
+   /*
+   const slice_segment_header* get_SliceHeader_atCtb(int ctb) {
+     return img->slices[img->get_SliceHeaderIndex_atIndex(ctb)];
+--- a/libde265/encoder/encoder-context.cc
++++ b/libde265/encoder/encoder-context.cc
+@@ -267,7 +267,7 @@
+   imgdata->shdr.slice_loop_filter_across_slices_enabled_flag = false;
+   imgdata->shdr.compute_derived_values(pps.get());
+ 
+-  imgdata->shdr.pps = &get_pps();
++  imgdata->shdr.pps = pps;
+ 
+   //shdr.slice_pic_order_cnt_lsb = poc & 0xFF;
+ 
+--- a/libde265/motion.cc
++++ b/libde265/motion.cc
+@@ -290,7 +290,7 @@
+   void*  pixels[3];
+   int    stride[3];
+ 
+-  const pic_parameter_set* pps = shdr->pps;
++  const pic_parameter_set* pps = shdr->pps.get();
+   const seq_parameter_set* sps = &img->get_sps();
+ 
+   const int SubWidthC  = sps->SubWidthC;
+--- a/libde265/slice.cc
++++ b/libde265/slice.cc
+@@ -384,7 +384,7 @@
+     return DE265_OK;
+   }
+ 
+-  pps = ctx->get_pps(slice_pic_parameter_set_id);
++  pps = ctx->get_shared_pps(slice_pic_parameter_set_id);
+ 
+   const seq_parameter_set* sps = pps->sps;
+   if (!sps->sps_read) {
+@@ -872,7 +872,7 @@
+   }
+ 
+ 
+-  compute_derived_values(pps);
++  compute_derived_values(pps.get());
+ 
+   *continueDecoding = true;
+   return DE265_OK;
+--- a/libde265/slice.h
++++ b/libde265/slice.h
+@@ -33,6 +33,7 @@
+ 
+ #include <vector>
+ #include <string.h>
++#include <memory>
+ 
+ #define MAX_NUM_REF_PICS    16
+ 
+@@ -145,7 +146,7 @@
+ 
+ 
+   int  slice_index; // index through all slices in a picture  (internal only)
+-  const pic_parameter_set* pps;
++  std::shared_ptr<const pic_parameter_set> pps;
+ 
+ 
+   char first_slice_segment_in_pic_flag;
