@@ -7,14 +7,11 @@ Uploaders:
  Joachim Bauch <bauch@struktur.de>
 Build-Depends:
  debhelper-compat (= 13),
- libjpeg-dev,
- libpng-dev,
  qtbase5-dev | libqt4-dev,
  libsdl-dev,
  libswscale-dev,
  libx11-dev,
  libxext-dev,
- libxv-dev,
  pkg-config
 Rules-Requires-Root: no
 Standards-Version: 4.6.1

@@ -290,7 +290,7 @@ void generate_inter_prediction_samples(base_context* ctx,
   int    stride[3];
 
   const pic_parameter_set* pps = shdr->pps.get();
-  const seq_parameter_set* sps = pps->sps.get();
+  const seq_parameter_set* sps = img->get_shared_sps().get();
 
   const int SubWidthC  = sps->SubWidthC;
   const int SubHeightC = sps->SubHeightC;
@@ -347,6 +347,16 @@ void generate_inter_prediction_samples(base_context* ctx,
       const de265_image* refPic = ctx->get_image(shdr->RefPicList[l][vi->refIdx[l]]);
 
       logtrace(LogMotion, "refIdx: %d -> dpb[%d]\n", vi->refIdx[l], shdr->RefPicList[l][vi->refIdx[l]]);
+
+      if (refPic) {
+          auto nonconst_refPic = const_cast<de265_image*>(refPic); /* shared_ptr.get() chokes on const.*/
+          auto refsps = nonconst_refPic->get_shared_sps().get();
+          auto imgsps = img->get_shared_sps().get();
+          if(refsps != imgsps) {
+              // rejecting reference image created with different sps.
+              refPic = nullptr;
+          }
+      }
 
       if (!refPic || refPic->PicState == UnusedForReference) {
         img->integrity = INTEGRITY_DECODING_ERRORS;
