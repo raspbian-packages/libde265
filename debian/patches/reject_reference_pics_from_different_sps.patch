@@ -1,0 +1,54 @@
+Description: Try to mitigate asan failures by rejecting reference pictures not created with the same sps.
+ The reference images might have different parameters (size, pixel depth, etc) and so different memory allocations,
+ leading to out of bound memory reads and writes.
+Origin: https://github.com/strukturag/libde265/pull/365
+Comment: Analysis of issue https://github.com/strukturag/libde265/issues/345#issuecomment-1346406079
+From 97dd15303085eae2695a511717bf3239e209df96 Mon Sep 17 00:00:00 2001
+From: Tobias Frost <tobi@debian.org>
+Date: Mon, 12 Dec 2022 14:03:12 +0100
+Subject: [PATCH] Try to mitigate asan failures.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+See #345 for my analysis and details…
+
+(This PR is just for discussion.)
+
+(The CVE references are obtained from the Debian security tracker,
+which links the issues.)
+
+This makes the following POCs stop failing:
+
+- poc3 (#337)
+- poc7-1 (#341) CVE-2022-43239 (note: does NOT fix poc7-2)
+- poc8-2, poc8-3, poc8-4 (#342) CVE-2022-43244   (note: does NOT fix poc8-1)
+- poc11-1, poc11-2 (#345) CVE-2022-43249
+- poc12 (#346)
+- poc13 (#347) CVE-2022-43252
+- poc16 (#350)
+---
+ libde265/motion.cc | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+Index: libde265/libde265/motion.cc
+===================================================================
+--- libde265.orig/libde265/motion.cc
++++ libde265/libde265/motion.cc
+@@ -361,6 +361,16 @@ void generate_inter_prediction_samples(b
+ 
+       logtrace(LogMotion, "refIdx: %d -> dpb[%d]\n", vi->refIdx[l], shdr->RefPicList[l][vi->refIdx[l]]);
+ 
++      if (refPic) {
++          auto nonconst_refPic = const_cast<de265_image*>(refPic); /* shared_ptr.get() chokes on const.*/
++          auto refsps = nonconst_refPic->get_shared_sps().get();
++          auto imgsps = img->get_shared_sps().get();
++          if(refsps != imgsps) {
++              // rejecting reference image created with different sps.
++              refPic = nullptr;
++          }
++      }
++
+       if (!refPic || refPic->PicState == UnusedForReference) {
+         img->integrity = INTEGRITY_DECODING_ERRORS;
+         ctx->add_warning(DE265_WARNING_NONEXISTING_REFERENCE_PICTURE_ACCESSED, false);
