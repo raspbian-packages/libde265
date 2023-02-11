@@ -524,9 +524,7 @@ libde265_la_SOURCES = acceleration.h alloc_pool.h alloc_pool.cc \
 SUBDIRS = $(am__append_4) $(am__append_6) $(am__append_8)
 libde265_la_LIBADD = $(am__append_5) $(am__append_7) $(am__append_9)
 EXTRA_DIST = Makefile.vc7 \
-  CMakeLists.txt \
-  ../extra/stdbool.h \
-  ../extra/stdint.h
+  CMakeLists.txt
 
 libde265_la_HEADERS = \
   de265.h \

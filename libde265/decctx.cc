@@ -1698,8 +1698,9 @@ int decoder_context::generate_unavailable_reference_picture(const seq_parameter_
   std::shared_ptr<const seq_parameter_set> current_sps = this->sps[ (int)current_pps->seq_parameter_set_id ];
 
   int idx = dpb.new_image(current_sps, this, 0,0, false);
-  assert(idx>=0);
-  //printf("-> fill with unavailable POC %d\n",POC);
+  if (idx<0) {
+    return idx;
+  }
 
   de265_image* img = dpb.get_image(idx);
 
@@ -1723,7 +1724,7 @@ int decoder_context::generate_unavailable_reference_picture(const seq_parameter_
 
    This function will mark pictures in the DPB as 'unused' or 'used for long-term reference'
  */
-void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
+de265_error decoder_context::process_reference_picture_set(slice_segment_header* hdr)
 {
   std::vector<int> removeReferencesList;
 
@@ -1871,6 +1872,9 @@ void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
       // We do not know the correct MSB
       int concealedPicture = generate_unavailable_reference_picture(current_sps.get(),
                                                                     PocLtCurr[i], true);
+      if (concealedPicture<0) {
+        return (de265_error)(-concealedPicture);
+      }
       picInAnyList.resize(dpb.size(), false); // adjust size of array to hold new picture
 
       RefPicSetLtCurr[i] = k = concealedPicture;
@@ -1897,6 +1901,9 @@ void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
     else {
       int concealedPicture = k = generate_unavailable_reference_picture(current_sps.get(),
                                                                         PocLtFoll[i], true);
+      if (concealedPicture<0) {
+        return (de265_error)(-concealedPicture);
+      }
       picInAnyList.resize(dpb.size(), false); // adjust size of array to hold new picture
 
       RefPicSetLtFoll[i] = concealedPicture;
@@ -1928,6 +1935,9 @@ void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
     else {
       int concealedPicture = generate_unavailable_reference_picture(current_sps.get(),
                                                                     PocStCurrBefore[i], false);
+      if (concealedPicture<0) {
+        return (de265_error)(-concealedPicture);
+      }
       RefPicSetStCurrBefore[i] = k = concealedPicture;
 
       picInAnyList.resize(dpb.size(), false); // adjust size of array to hold new picture
@@ -1951,6 +1961,9 @@ void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
     else {
       int concealedPicture = generate_unavailable_reference_picture(current_sps.get(),
                                                                     PocStCurrAfter[i], false);
+      if (concealedPicture<0) {
+        return (de265_error)(-concealedPicture);
+      }
       RefPicSetStCurrAfter[i] = k = concealedPicture;
 
 
@@ -1994,6 +2007,8 @@ void decoder_context::process_reference_picture_set(slice_segment_header* hdr)
   hdr->RemoveReferencesList = removeReferencesList;
 
   //remove_images_from_dpb(hdr->RemoveReferencesList);
+
+  return DE265_OK;
 }
 
 
@@ -2292,8 +2307,8 @@ bool decoder_context::process_slice_segment_header(slice_segment_header* hdr,
     int image_buffer_idx;
     bool isOutputImage = (!sps->sample_adaptive_offset_enabled_flag || param_disable_sao);
     image_buffer_idx = dpb.new_image(current_sps, this, pts, user_data, isOutputImage);
-    if (image_buffer_idx == -1) {
-      *err = DE265_ERROR_IMAGE_BUFFER_FULL;
+    if (image_buffer_idx < 0) {
+      *err = (de265_error)(-image_buffer_idx);
       return false;
     }
 
@@ -2345,7 +2360,10 @@ bool decoder_context::process_slice_segment_header(slice_segment_header* hdr,
       // mark picture so that it is not overwritten by unavailable reference frames
       img->PicState = UsedForShortTermReference;
 
-      process_reference_picture_set(hdr);
+      *err = process_reference_picture_set(hdr);
+      if (*err != DE265_OK) {
+        return false;
+      }
     }
 
     img->PicState = UsedForShortTermReference;

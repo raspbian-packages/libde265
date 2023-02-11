@@ -47,16 +47,16 @@ still fail with ONLY #365 applied (IOW, both are needed)
  libde265/motion.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/libde265/motion.cc b/libde265/motion.cc
-index 8bbfbde0..89d5a167 100644
---- a/libde265/motion.cc
-+++ b/libde265/motion.cc
-@@ -290,7 +290,7 @@ void generate_inter_prediction_samples(base_context* ctx,
+Index: libde265/libde265/motion.cc
+===================================================================
+--- libde265.orig/libde265/motion.cc
++++ libde265/libde265/motion.cc
+@@ -290,7 +290,7 @@ void generate_inter_prediction_samples(b
    int    stride[3];
  
    const pic_parameter_set* pps = shdr->pps.get();
 -  const seq_parameter_set* sps = pps->sps.get();
 +  const seq_parameter_set* sps = img->get_shared_sps().get();
  
-   const int SubWidthC  = sps->SubWidthC;
-   const int SubHeightC = sps->SubHeightC;
+   if (sps->BitDepth_Y != img->get_bit_depth(0) ||
+       sps->BitDepth_C != img->get_bit_depth(1)) {

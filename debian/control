@@ -14,7 +14,7 @@ Build-Depends:
  libxext-dev,
  pkg-config
 Rules-Requires-Root: no
-Standards-Version: 4.6.1
+Standards-Version: 4.6.2
 Homepage: https://github.com/strukturag/libde265
 Vcs-Git: https://salsa.debian.org/multimedia-team/libde265.git
 Vcs-Browser: https://salsa.debian.org/multimedia-team/libde265

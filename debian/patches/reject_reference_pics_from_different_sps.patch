@@ -31,11 +31,11 @@ This makes the following POCs stop failing:
  libde265/motion.cc | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
-diff --git a/libde265/motion.cc b/libde265/motion.cc
-index 8bbfbde0..1d20bcd3 100644
---- a/libde265/motion.cc
-+++ b/libde265/motion.cc
-@@ -348,6 +348,16 @@ void generate_inter_prediction_samples(base_context* ctx,
+Index: libde265/libde265/motion.cc
+===================================================================
+--- libde265.orig/libde265/motion.cc
++++ libde265/libde265/motion.cc
+@@ -361,6 +361,16 @@ void generate_inter_prediction_samples(b
  
        logtrace(LogMotion, "refIdx: %d -> dpb[%d]\n", vi->refIdx[l], shdr->RefPicList[l][vi->refIdx[l]]);
  

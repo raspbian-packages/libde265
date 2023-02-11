@@ -76,4 +76,3 @@ libde265.so.0 libde265-0 #MINVER#
  (optional=only used internally by sherlock265)draw_TB_grid@Base 0.8
  (optional=only used internally by sherlock265)draw_Tiles@Base 0.8
  (optional=only used internally by sherlock265)draw_intra_pred_modes@Base 0.8
- (optional=only used by the non-final encoder api|regex)en265_.*@Base 1.0.2

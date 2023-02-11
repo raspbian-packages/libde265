@@ -2,11 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([libde265], [1.0.9], [dirk.farin@gmail.com])
+AC_INIT([libde265], [1.0.11], [dirk.farin@gmail.com])
 AC_CONFIG_SRCDIR([libde265/de265.cc])
 AC_CONFIG_HEADERS([config.h])
 
-NUMERIC_VERSION=0x01000900 # Numeric representation of the version (A.B.C[.D] = 0xAABBCCDD)
+NUMERIC_VERSION=0x01001100 # Numeric representation of the version (A.B.C[.D] = 0xAABBCCDD)
 AC_SUBST(NUMERIC_VERSION)
 
 # From https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html:
@@ -16,7 +16,7 @@ AC_SUBST(NUMERIC_VERSION)
 # If any interfaces have been removed or changed since the last public release, then set age to 0.
 
 LIBDE265_CURRENT=1
-LIBDE265_REVISION=2
+LIBDE265_REVISION=4
 LIBDE265_AGE=1
 
 # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ gl_VISIBILITY
 AM_CONDITIONAL([HAVE_VISIBILITY], [test "x$HAVE_VISIBILITY" != "x0"])
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdint.h stdlib.h string.h malloc.h signal.h setjmp.h stddef.h sys/time.h])
+AC_CHECK_HEADERS([stdlib.h string.h malloc.h signal.h setjmp.h stddef.h sys/time.h])
 
 AC_LANG_PUSH(C++)
 OLD_CPPFLAGS="$CPPFLAGS"
@@ -176,8 +176,8 @@ AC_MSG_RESULT([$has_nullptr])
 
 
 
-AC_ARG_ENABLE([encoder], AS_HELP_STRING([--disable-encoder], [Do not build encoder.]))
-if eval "test x$enable_encoder = x"      ; then enable_encoder=yes ; fi
+AC_ARG_ENABLE([encoder], AS_HELP_STRING([--enable-encoder], [Build the encoder (experimental).]))
+if eval "test x$enable_encoder = x"      ; then enable_encoder=no ; fi
 
 AM_CONDITIONAL([ENABLE_ENCODER], [test x"$enable_encoder" = x"yes"])
 
