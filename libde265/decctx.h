@@ -301,6 +301,9 @@ class decoder_context : public base_context {
   bool has_sps(int id) const { return (bool)sps[id]; }
   bool has_pps(int id) const { return (bool)pps[id]; }
 
+  std::shared_ptr<const seq_parameter_set> get_shared_sps(int id) { return sps[id]; }
+  std::shared_ptr<const pic_parameter_set> get_shared_pps(int id) { return pps[id]; }
+
   /* */ seq_parameter_set* get_sps(int id)       { return sps[id].get(); }
   const seq_parameter_set* get_sps(int id) const { return sps[id].get(); }
   /* */ pic_parameter_set* get_pps(int id)       { return pps[id].get(); }
@@ -447,8 +450,8 @@ class decoder_context : public base_context {
   de265_image* img;
 
  public:
-  const slice_segment_header* previous_slice_header; /* Remember the last slice for a successive
-                                                        dependent slice. */
+  const slice_segment_header* previous_slice_header = nullptr; /* Remember the last slice for a successive
+								  dependent slice. */
 
 
   // --- motion compensation ---
@@ -510,9 +513,14 @@ class decoder_context : public base_context {
                                      int progress);
 
   void process_picture_order_count(slice_segment_header* hdr);
+
+  /*
+  If there is no space for a new image, returns the negative value of an de265_error.
+  I.e. you can check for error by return_value<0, which is error (-return_value);
+   */
   int generate_unavailable_reference_picture(const seq_parameter_set* sps,
                                              int POC, bool longTerm);
-  void process_reference_picture_set(slice_segment_header* hdr);
+  de265_error process_reference_picture_set(slice_segment_header* hdr);
   bool construct_reference_picture_lists(slice_segment_header* hdr);
 
 

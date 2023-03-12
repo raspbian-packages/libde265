@@ -27,10 +27,6 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_STDBOOL_H
-#include <stdbool.h>
-#endif
-
 #include <deque>
 #include <string>
 #include <atomic>
@@ -43,6 +39,9 @@ typedef pthread_mutex_t  de265_mutex;
 typedef pthread_cond_t   de265_cond;
 
 #else // _WIN32
+#if !defined(NOMINMAX)
+#define NOMINMAX 1
+#endif
 #include <windows.h>
 #include "../extra/win32cond.h"
 #if _MSC_VER > 1310

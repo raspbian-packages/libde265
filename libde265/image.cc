@@ -20,7 +20,7 @@
 
 #include "image.h"
 #include "decctx.h"
-#include "encoder/encoder-context.h"
+#include "en265.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +34,9 @@
 #endif
 
 #ifdef HAVE_SSE4_1
-#define MEMORY_PADDING  8
+// SSE code processes 128bit per iteration and thus might read more data
+// than is later actually used.
+#define MEMORY_PADDING  16
 #else
 #define MEMORY_PADDING  0
 #endif
@@ -191,9 +193,9 @@ de265_image::de265_image()
   removed_at_picture_id = 0; // picture not used, so we can assume it has been removed
 
   decctx = NULL;
-  encctx = NULL;
+  //encctx = NULL;
 
-  encoder_image_release_func = NULL;
+  //encoder_image_release_func = NULL;
 
   //alloc_functions.get_buffer = NULL;
   //alloc_functions.release_buffer = NULL;
@@ -232,7 +234,7 @@ de265_image::de265_image()
 de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
                                      std::shared_ptr<const seq_parameter_set> sps, bool allocMetadata,
                                      decoder_context* dctx,
-                                     encoder_context* ectx,
+                                     //encoder_context* ectx,
                                      de265_PTS pts, void* user_data,
                                      bool useCustomAllocFunc)
 {
@@ -249,7 +251,7 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
   removed_at_picture_id = std::numeric_limits<int32_t>::max();
 
   decctx = dctx;
-  encctx = ectx;
+  //encctx = ectx;
 
   // --- allocate image buffer ---
 
@@ -311,7 +313,7 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
     break;
   }
 
-  if (sps) {
+  if (chroma_format != de265_chroma_mono && sps) {
     assert(sps->SubWidthC  == SubWidthC);
     assert(sps->SubHeightC == SubHeightC);
   }
@@ -354,8 +356,9 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
 
   void* alloc_userdata = NULL;
   if (decctx) alloc_userdata = decctx->param_image_allocation_userdata;
-  if (encctx) alloc_userdata = encctx->param_image_allocation_userdata; // actually not needed
+  // if (encctx) alloc_userdata = encctx->param_image_allocation_userdata; // actually not needed
 
+  /*
   if (encctx && useCustomAllocFunc) {
     encoder_image_release_func = encctx->release_func;
 
@@ -369,7 +372,7 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
       image_allocation_functions.release_buffer = NULL;
     }
   }
-  else if (decctx && useCustomAllocFunc) {
+  else*/ if (decctx && useCustomAllocFunc) {
     image_allocation_functions = decctx->param_image_allocation_functions;
   }
   else {
@@ -383,9 +386,15 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
                                                               alloc_userdata);
 
     pixels_confwin[0] = pixels[0] + left*WinUnitX + top*WinUnitY*stride;
-    pixels_confwin[1] = pixels[1] + left + top*chroma_stride;
-    pixels_confwin[2] = pixels[2] + left + top*chroma_stride;
 
+    if (chroma_format != de265_chroma_mono) {
+      pixels_confwin[1] = pixels[1] + left + top*chroma_stride;
+      pixels_confwin[2] = pixels[2] + left + top*chroma_stride;
+    }
+    else {
+      pixels_confwin[1] = NULL;
+      pixels_confwin[2] = NULL;
+    }
 
     // check for memory shortage
 
@@ -436,7 +445,8 @@ de265_error de265_image::alloc_image(int w,int h, enum de265_chroma c,
 
     // CTB info
 
-    if (ctb_info.data_size != sps->PicSizeInCtbsY)
+    if (ctb_info.width_in_units != sps->PicWidthInCtbsY ||
+        ctb_info.height_in_units != sps->PicHeightInCtbsY)
       {
         delete[] ctb_progress;
 
@@ -480,13 +490,14 @@ void de265_image::release()
 
   if (pixels[0])
     {
+      /*
       if (encoder_image_release_func != NULL) {
         encoder_image_release_func(encctx, this,
                                    encctx->param_image_allocation_userdata);
       }
-      else {
+      else*/ {
         image_allocation_functions.release_buffer(decctx, this,
-                                                decctx ?
+                                                  decctx ?
                                                   decctx->param_image_allocation_userdata :
                                                   NULL);
       }
@@ -532,7 +543,7 @@ de265_error de265_image::copy_image(const de265_image* src)
   */
 
   de265_error err = alloc_image(src->width, src->height, src->chroma_format, src->sps, false,
-                                src->decctx, src->encctx, src->pts, src->user_data, false);
+                                src->decctx, /*src->encctx,*/ src->pts, src->user_data, false);
   if (err != DE265_OK) {
     return err;
   }

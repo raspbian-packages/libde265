@@ -384,9 +384,9 @@ de265_error slice_segment_header::read(bitreader* br, decoder_context* ctx,
     return DE265_OK;
   }
 
-  pps = ctx->get_pps(slice_pic_parameter_set_id);
+  pps = ctx->get_shared_pps(slice_pic_parameter_set_id);
 
-  const seq_parameter_set* sps = pps->sps;
+  const seq_parameter_set* sps = pps->sps.get();
   if (!sps->sps_read) {
     ctx->add_warning(DE265_WARNING_NONEXISTING_SPS_REFERENCED, false);
     *continueDecoding = false;
@@ -872,7 +872,7 @@ de265_error slice_segment_header::read(bitreader* br, decoder_context* ctx,
   }
 
 
-  compute_derived_values(pps);
+  compute_derived_values(pps.get());
 
   *continueDecoding = true;
   return DE265_OK;
@@ -3387,7 +3387,7 @@ int residual_coding(thread_context* tctx,
         }
 
         if (pps.sign_data_hiding_flag && signHidden) {
-          sumAbsLevel += baseLevel + coeff_abs_level_remaining;
+          sumAbsLevel += currCoeff;
 
           if (n==nCoefficients-1 && (sumAbsLevel & 1)) {
             currCoeff = -currCoeff;
@@ -4173,6 +4173,11 @@ void read_pcm_samples_internal(thread_context* tctx, int x0, int y0, int log2CbS
   stride = tctx->img->get_image_stride(cIdx);
 
   int shift = bitDepth - nPcmBits;
+
+  // a shift < 0 may result when the SPS sequence header is broken
+  if (shift < 0) {
+    shift=0;
+  }
 
   for (int y=0;y<h;y++)
     for (int x=0;x<w;x++)

@@ -211,11 +211,21 @@ void apply_sao_internal(de265_image* img, int xCtb,int yCtb,
             continue;
           }
 
-          int bandIdx = bandTable[ in_img[xC+i+(yC+j)*in_stride]>>bandShift ];
-
           // Shifts are a strange thing. On x86, >>x actually computes >>(x%64).
           // So we have to take care of large bandShifts.
-          if (bandShift>=8) { bandIdx=0; }
+          int bandIdx;
+          if (bandShift >= 8) {
+            bandIdx = 0;
+          } else {
+            int pixel = in_img[xC+i+(yC+j)*in_stride];
+
+            // Note: the input pixel value should never exceed the valid range, but it seems that it still does,
+            // maybe when there was a decoding error and the pixels have not been filled in correctly.
+            // Thus, we have to limit the pixel range to ensure that we have no illegal table access.
+            pixel = Clip3(0,maxPixelValue, pixel);
+
+            bandIdx = bandTable[ pixel>>bandShift ];
+          }
 
           if (bandIdx>0) {
             int offset = saoinfo->saoOffsetVal[cIdx][bandIdx-1];
@@ -237,10 +247,20 @@ void apply_sao_internal(de265_image* img, int xCtb,int yCtb,
         for (int j=0;j<ctbH;j++)
           for (int i=0;i<ctbW;i++) {
 
-            int bandIdx = bandTable[ in_img[xC+i+(yC+j)*in_stride]>>bandShift ];
-
             // see above
-            if (bandShift>=8) { bandIdx=0; }
+            int bandIdx;
+            if (bandShift >= 8) {
+              bandIdx = 0;
+            } else {
+              int pixel = in_img[xC+i+(yC+j)*in_stride];
+
+              // Note: the input pixel value should never exceed the valid range, but it seems that it still does,
+              // maybe when there was a decoding error and the pixels have not been filled in correctly.
+              // Thus, we have to limit the pixel range to ensure that we have no illegal table access.
+              pixel = Clip3(0,maxPixelValue, pixel);
+
+              bandIdx = bandTable[ pixel>>bandShift ];
+            }
 
             if (bandIdx>0) {
               int offset = saoinfo->saoOffsetVal[cIdx][bandIdx-1];
@@ -484,7 +504,7 @@ bool add_sao_tasks(image_unit* imgunit, int saoInputProgress)
                                                     img->get_chroma_format(),
                                                     img->get_shared_sps(),
                                                     false,
-                                                    img->decctx, img->encctx,
+                                                    img->decctx, //img->encctx,
                                                     img->pts, img->user_data, true);
   if (err != DE265_OK) {
     img->decctx->add_warning(DE265_WARNING_CANNOT_APPLY_SAO_OUT_OF_MEMORY,false);

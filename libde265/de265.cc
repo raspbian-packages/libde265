@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <mutex>
 
 
 // TODO: should be in some vps.c related header
@@ -47,19 +48,24 @@ LIBDE265_API uint32_t de265_get_version_number(void)
     return (LIBDE265_NUMERIC_VERSION);
 }
 
+static uint8_t bcd2dec(uint8_t v)
+{
+  return (v>>4) * 10 + (v & 0x0F);
+}
+
 LIBDE265_API int de265_get_version_number_major(void)
 {
-  return ((LIBDE265_NUMERIC_VERSION)>>24) & 0xFF;
+  return bcd2dec(((LIBDE265_NUMERIC_VERSION)>>24) & 0xFF);
 }
 
 LIBDE265_API int de265_get_version_number_minor(void)
 {
-  return ((LIBDE265_NUMERIC_VERSION)>>16) & 0xFF;
+  return bcd2dec(((LIBDE265_NUMERIC_VERSION)>>16) & 0xFF);
 }
 
 LIBDE265_API int de265_get_version_number_maintenance(void)
 {
-  return ((LIBDE265_NUMERIC_VERSION)>>8) & 0xFF;
+  return bcd2dec(((LIBDE265_NUMERIC_VERSION)>>8) & 0xFF);
 }
 
 
@@ -158,6 +164,16 @@ LIBDE265_API const char* de265_get_error_text(de265_error err)
     return "collocated motion-vector is outside image area";
   case DE265_WARNING_PCM_BITDEPTH_TOO_LARGE:
     return "PCM bit-depth too large";
+  case DE265_WARNING_REFERENCE_IMAGE_BIT_DEPTH_DOES_NOT_MATCH:
+    return "Bit-depth of reference image does not match current image";
+  case DE265_WARNING_REFERENCE_IMAGE_SIZE_DOES_NOT_MATCH_SPS:
+    return "Size of reference image does not match current size in SPS";
+  case DE265_WARNING_CHROMA_OF_CURRENT_IMAGE_DOES_NOT_MATCH_SPS:
+    return "Chroma format of current image does not match chroma in SPS";
+  case DE265_WARNING_BIT_DEPTH_OF_CURRENT_IMAGE_DOES_NOT_MATCH_SPS:
+    return "Bit-depth of current image does not match SPS";
+  case DE265_WARNING_REFERENCE_IMAGE_CHROMA_FORMAT_DOES_NOT_MATCH:
+    return "Chroma format of reference image does not match current image";
 
   default: return "unknown error";
   }
@@ -170,12 +186,22 @@ LIBDE265_API int de265_isOK(de265_error err)
 
 
 
-static std::atomic<int> de265_init_count;
+static int de265_init_count;
+
+static std::mutex& de265_init_mutex()
+{
+  static std::mutex de265_init_mutex;
+  return de265_init_mutex;
+}
+
 
 LIBDE265_API de265_error de265_init()
 {
-  int cnt = std::atomic_fetch_add(&de265_init_count,1);
-  if (cnt>0) {
+  std::lock_guard<std::mutex> lock(de265_init_mutex());
+
+  de265_init_count++;
+
+  if (de265_init_count > 1) {
     // we are not the first -> already initialized
 
     return DE265_OK;
@@ -187,7 +213,7 @@ LIBDE265_API de265_error de265_init()
   init_scan_orders();
 
   if (!alloc_and_init_significant_coeff_ctxIdx_lookupTable()) {
-    std::atomic_fetch_sub(&de265_init_count,1);
+    de265_init_count--;
     return DE265_ERROR_LIBRARY_INITIALIZATION_FAILED;
   }
 
@@ -196,13 +222,15 @@ LIBDE265_API de265_error de265_init()
 
 LIBDE265_API de265_error de265_free()
 {
-  int cnt = std::atomic_fetch_sub(&de265_init_count,1);
-  if (cnt<=0) {
-    std::atomic_fetch_add(&de265_init_count,1);
+  std::lock_guard<std::mutex> lock(de265_init_mutex());
+
+  if (de265_init_count<=0) {
     return DE265_ERROR_LIBRARY_NOT_INITIALIZED;
   }
 
-  if (cnt==1) {
+  de265_init_count--;
+
+  if (de265_init_count==0) {
     free_significant_coeff_ctxIdx_lookupTable();
   }
 
@@ -701,4 +729,25 @@ LIBDE265_API void de265_get_image_NAL_header(const struct de265_image* img,
   if (nuh_layer_id)    *nuh_layer_id    = img->nal_hdr.nuh_layer_id;
   if (nuh_temporal_id) *nuh_temporal_id = img->nal_hdr.nuh_temporal_id;
 }
+
+LIBDE265_API int de265_get_image_full_range_flag(const struct de265_image* img)
+{
+  return img->get_sps().vui.video_full_range_flag;
+}
+
+LIBDE265_API int de265_get_image_colour_primaries(const struct de265_image* img)
+{
+  return img->get_sps().vui.colour_primaries;
+}
+
+LIBDE265_API int de265_get_image_transfer_characteristics(const struct de265_image* img)
+{
+  return img->get_sps().vui.transfer_characteristics;
+}
+
+LIBDE265_API int de265_get_image_matrix_coefficients(const struct de265_image* img)
+{
+  return img->get_sps().vui.matrix_coeffs;
+}
+
 }

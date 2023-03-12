@@ -4,7 +4,7 @@ Description: Only export symbols defined in the decoder API.
 Author: Joachim Bauch <bauch@struktur.de>
 --- a/libde265/encoder/Makefile.am
 +++ b/libde265/encoder/Makefile.am
-@@ -10,6 +10,18 @@
+@@ -12,6 +12,18 @@
    encpicbuf.h encpicbuf.cc \
    sop.h sop.cc
  
@@ -41,7 +41,7 @@ Author: Joachim Bauch <bauch@struktur.de>
    CMakeLists.txt
 --- a/configure.ac
 +++ b/configure.ac
-@@ -50,9 +50,7 @@
+@@ -56,9 +56,7 @@
  fi
  changequote([,])dnl
  
@@ -54,7 +54,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  # Checks for header files.
 --- a/libde265/image-io.cc
 +++ b/libde265/image-io.cc
-@@ -183,7 +183,7 @@
+@@ -186,7 +186,7 @@
  }
  
  
@@ -63,7 +63,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  {
    if (mFH) {
      fclose(mFH);
-@@ -191,7 +191,7 @@
+@@ -194,7 +194,7 @@
  }
  
  
@@ -72,7 +72,7 @@ Author: Joachim Bauch <bauch@struktur.de>
  {
    assert(mFH==NULL);
  
-@@ -199,7 +199,7 @@
+@@ -202,7 +202,7 @@
  }
  
  

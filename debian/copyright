@@ -71,26 +71,6 @@ License: public-domain-1
  optimizations are not included to reduce source code size and avoid
  compile-time configuration.
 
-Files: extra/stdint.h
-Copyright: No copyright holder
-License: public-domain-2
- ISO C9x  7.18  Integer types <stdint.h>
- Based on ISO/IEC SC22/WG14 9899 Committee draft (SC22 N2794)
- .
- THIS SOFTWARE IS NOT COPYRIGHTED
- .
- Contributor: Danny Smith <danny_r_smith_2001@yahoo.co.nz>
- .
- This source code is offered for use in the public domain. You may
- use, modify or distribute it freely.
- .
- This code is distributed in the hope that it will be useful but
- WITHOUT ANY WARRANTY. ALL WARRANTIES, EXPRESS OR IMPLIED ARE HEREBY
- DISCLAIMED. This includes but is not limited to warranties of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- .
- Date: 2000-12-02
-
 Files: extra/win32cond.c
  extra/win32cond.h
 Copyright:
@@ -119,7 +99,7 @@ License: other-1
 
 Files: debian/*
 Copyright:
-  2014 Joachim Bauch <jojo@struktur.de>
+  2014-2023 Joachim Bauch <jojo@struktur.de>
   2014 Alessio Treglia <alessio@debian.org>
 License: LGPL-3+
 
