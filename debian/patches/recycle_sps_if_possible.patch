@@ -23,11 +23,11 @@ if an ABI bump would be done, of course this should go to the respective classes
  libde265/sps.cc    |   6 +
  2 files changed, 279 insertions(+)
 
-diff --git a/libde265/decctx.cc b/libde265/decctx.cc
-index 6701725f..0000b25d 100644
---- a/libde265/decctx.cc
-+++ b/libde265/decctx.cc
-@@ -545,6 +545,263 @@ de265_error decoder_context::read_vps_NAL(bitreader& reader)
+Index: libde265/libde265/decctx.cc
+===================================================================
+--- libde265.orig/libde265/decctx.cc
++++ libde265/libde265/decctx.cc
+@@ -546,6 +546,263 @@ de265_error decoder_context::read_vps_NA
    return DE265_OK;
  }
  
@@ -291,7 +291,7 @@ index 6701725f..0000b25d 100644
  de265_error decoder_context::read_sps_NAL(bitreader& reader)
  {
    logdebug(LogHeaders,"----> read SPS\n");
-@@ -560,6 +817,22 @@ de265_error decoder_context::read_sps_NAL(bitreader& reader)
+@@ -561,6 +818,22 @@ de265_error decoder_context::read_sps_NA
      new_sps->dump(param_sps_headers_fd);
    }
  
@@ -314,11 +314,11 @@ index 6701725f..0000b25d 100644
    sps[ new_sps->seq_parameter_set_id ] = new_sps;
  
    // Remove the all PPS that referenced the old SPS because parameters may have changed and we do not want to
-diff --git a/libde265/sps.cc b/libde265/sps.cc
-index f1c28255..31ce9470 100644
---- a/libde265/sps.cc
-+++ b/libde265/sps.cc
-@@ -287,6 +287,11 @@ de265_error seq_parameter_set::read(error_queue* errqueue, bitreader* br)
+Index: libde265/libde265/sps.cc
+===================================================================
+--- libde265.orig/libde265/sps.cc
++++ libde265/libde265/sps.cc
+@@ -287,6 +287,11 @@ de265_error seq_parameter_set::read(erro
    int firstLayer = (sps_sub_layer_ordering_info_present_flag ?
                      0 : sps_max_sub_layers-1 );
  
@@ -330,7 +330,7 @@ index f1c28255..31ce9470 100644
    for (int i=firstLayer ; i <= sps_max_sub_layers-1; i++ ) {
  
      // sps_max_dec_pic_buffering[i]
-@@ -347,6 +352,7 @@ de265_error seq_parameter_set::read(error_queue* errqueue, bitreader* br)
+@@ -347,6 +352,7 @@ de265_error seq_parameter_set::read(erro
      if (sps_scaling_list_data_present_flag) {
  
        de265_error err;

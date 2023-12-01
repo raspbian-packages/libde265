@@ -6,6 +6,11 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 %:
 	dh $@
 
+
+override_dh_auto_test:
+	./debian/tests/test-decode
+	dh_auto_test
+
 override_dh_auto_install:
 	dh_auto_install
 	cd $(CURDIR)/debian/tmp/usr/bin/ && mv dec265 libde265-dec265

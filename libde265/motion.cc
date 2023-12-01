@@ -1266,6 +1266,16 @@ void derive_collocated_motion_vectors(base_context* ctx,
 
 
 
+  int slice_hdr_idx = colImg->get_SliceHeaderIndex(xColPb,yColPb);
+  if (slice_hdr_idx >= colImg->slices.size()) {
+    ctx->add_warning(DE265_WARNING_INVALID_SLICE_HEADER_INDEX_ACCESS, false);
+
+    *out_availableFlagLXCol = 0;
+    out_mvLXCol->x = 0;
+    out_mvLXCol->y = 0;
+    return;
+  }
+
   const slice_segment_header* colShdr = colImg->slices[ colImg->get_SliceHeaderIndex(xColPb,yColPb) ];
 
   if (shdr->LongTermRefPic[X][refIdxLX] !=
@@ -1652,8 +1662,8 @@ void derive_spatial_luma_vector_prediction(base_context* ctx,
 
     out_availableFlagLXN[0] = false;
     out_availableFlagLXN[1] = false;
-    out_mvLXN[0] = MotionVector{};
-    out_mvLXN[1] = MotionVector{};
+    out_mvLXN[0] = MotionVector();
+    out_mvLXN[1] = MotionVector();
     return;
   }
 
@@ -1717,8 +1727,16 @@ void derive_spatial_luma_vector_prediction(base_context* ctx,
 
       const de265_image* imgX = NULL;
       if (vi.predFlag[X]) imgX = ctx->get_image(shdr->RefPicList[X][ vi.refIdx[X] ]);
+
       const de265_image* imgY = NULL;
-      if (vi.predFlag[Y]) imgY = ctx->get_image(shdr->RefPicList[Y][ vi.refIdx[Y] ]);
+      if (vi.predFlag[Y]) {
+        // check for input data validity
+        if (vi.refIdx[Y]<0 || vi.refIdx[Y] >= MAX_NUM_REF_PICS) {
+          return;
+        }
+
+        imgY = ctx->get_image(shdr->RefPicList[Y][ vi.refIdx[Y] ]);
+      }
 
       // check whether the predictor X is available and references the same POC
       if (vi.predFlag[X] && imgX && imgX->PicOrderCntVal == referenced_POC) {
@@ -1851,7 +1869,13 @@ void derive_spatial_luma_vector_prediction(base_context* ctx,
       const de265_image* imgX = NULL;
       if (vi.predFlag[X]) imgX = ctx->get_image(shdr->RefPicList[X][ vi.refIdx[X] ]);
       const de265_image* imgY = NULL;
-      if (vi.predFlag[Y]) imgY = ctx->get_image(shdr->RefPicList[Y][ vi.refIdx[Y] ]);
+      if (vi.predFlag[Y]) {
+        if (vi.refIdx[Y] < 0 || vi.refIdx[Y] >= MAX_NUM_REF_PICS) {
+          return;
+        }
+
+        imgY = ctx->get_image(shdr->RefPicList[Y][ vi.refIdx[Y] ]);
+      }
 
       if (vi.predFlag[X] && imgX && imgX->PicOrderCntVal == referenced_POC) {
         logtrace(LogMotion,"a) take B%d/L%d as B candidate with same POC\n",k,X);

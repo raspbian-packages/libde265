@@ -8,7 +8,7 @@ Uploaders:
 Build-Depends:
  debhelper-compat (= 13),
  qtbase5-dev | libqt4-dev,
- libsdl-dev,
+ libsdl2-dev,
  libswscale-dev,
  libx11-dev,
  libxext-dev,

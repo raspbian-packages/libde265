@@ -1,9 +1,36 @@
-libde265 (1.0.11-1+rpi1) bookworm-staging; urgency=medium
+libde265 (1.0.13-1+rpi1) trixie-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Sat, 11 Feb 2023 07:35:47 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Fri, 01 Dec 2023 09:57:43 +0000
+
+libde265 (1.0.13-1) unstable; urgency=medium
+
+  * New upstream version 1.0.13
+  * Fixes CVE-2023-47471 (Closes: #1056187), CVE-2023-43887.
+  * Update patches for new upstream version.
+  * d/control: Upstream switched examples to SDL2 (Closes: #1038097).
+  * Update symbols for new upstream version.
+
+ -- Joachim Bauch <bauch@struktur.de>  Tue, 21 Nov 2023 08:59:09 +0100
+
+libde265 (1.0.12-2) unstable; urgency=medium
+
+  * Team upload
+  * Clean Makefiles (Closes: #1047354)
+
+  [ Vladimir Petko ]
+  * add libde265 decoder smoke test (Closes: #1052214)
+
+ -- Bastian Germann <bage@debian.org>  Tue, 19 Sep 2023 08:20:11 +0000
+
+libde265 (1.0.12-1) unstable; urgency=medium
+
+  * New upstream version 1.0.12
+  * Fixes CVE-2023-27102, CVE-2023-27103
+
+ -- Joachim Bauch <bauch@struktur.de>  Tue, 20 Jun 2023 09:10:00 +0200
 
 libde265 (1.0.11-1) unstable; urgency=medium
 

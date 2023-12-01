@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.3.2)
 
 project (libde265
     LANGUAGES C CXX
-    VERSION 1.0.11
+    VERSION 1.0.13
 )
 
 set(CMAKE_CXX_STANDARD 11)
@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # The version number.
-set (NUMERIC_VERSION 0x01001100)
+set (NUMERIC_VERSION 0x01001300)
 set (PACKAGE_VERSION ${PROJECT_VERSION})
 
 include (${CMAKE_ROOT}/Modules/CheckCCompilerFlag.cmake)
@@ -23,7 +23,7 @@ include(CheckFunctionExists)
 option(ENABLE_SDL "Enable SDL" ON)
 
 if (ENABLE_SDL)
-	find_package(SDL)
+	find_package(SDL2)
 endif()
 
 find_package(Threads REQUIRED)
@@ -44,7 +44,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   add_definitions(-Wall)
 endif()
 
-option(DISABLE_SSE "Disable SSE optimizations" OFF)
+check_c_source_compiles(
+    "#if !defined(__x86_64) && !defined(__i386__) \\
+    && !defined(_M_IX86) && !defined(_M_AMD64)
+    #error not x86
+    #endif
+    int main(){return 0;}"
+    HAVE_X86)
+set(DISABLE_SSE "Disable SSE optimizations" ${HAVE_X86})
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 if(NOT BUILD_SHARED_LIBS)
