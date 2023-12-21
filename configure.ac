@@ -105,6 +105,9 @@ AC_FUNC_MKTIME
 LIBS_PRIVATE="$LIBS -lstdc++"
 AC_SUBST(LIBS_PRIVATE)
 
+LIBS_PRIVATE="$LIBS -lstdc++"
+AC_SUBST(LIBS_PRIVATE)
+
 AM_CONDITIONAL(MINGW, expr $host : '.*-mingw' >/dev/null 2>&1)
 
 # Check if "__STRICT_ANSI__" is required.
