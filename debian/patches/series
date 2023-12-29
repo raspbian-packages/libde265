@@ -1,0 +1,14 @@
+only_export_decoder_api.patch
+disable_tools.patch
+reject_reference_pics_from_different_sps.patch
+use_sps_from_the_image.patch
+recycle_sps_if_possible.patch
+CVE-2023-27102.patch
+CVE-2023-27103.patch
+CVE-2023-43887.patch
+CVE-2023-47471.patch
+
+CVE-2023-49465.patch
+CVE-2023-49467.patch
+CVE-2023-49468.patch
+
