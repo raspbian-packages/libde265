@@ -1,9 +1,21 @@
-libde265 (1.0.11-0+deb10u5+rpi1) buster-staging; urgency=medium
+libde265 (1.0.11-0+deb10u6+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 01 Dec 2023 04:27:57 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 04 Jan 2024 22:53:14 +0000
+
+libde265 (1.0.11-0+deb10u6) buster-security; urgency=high
+
+  * Non-maintainer upload by the LTS Team.
+  * CVE-2023-49465
+    heap-buffer-overflow in derive_spatial_luma_vector_prediction()
+  * CVE-2023-49467
+    heap-buffer-overflow in derive_combined_bipredictive_merging_candidates()
+  * CVE-2023-49468
+    global buffer overflow in read_coding_unit()
+
+ -- Thorsten Alteholz <debian@alteholz.de>  Fri, 29 Dec 2023 23:03:02 +0100
 
 libde265 (1.0.11-0+deb10u5) buster-security; urgency=medium
 
