@@ -1,9 +1,17 @@
-libde265 (1.0.13-1+rpi1) trixie-staging; urgency=medium
+libde265 (1.0.15-1+rpi1) trixie-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 01 Dec 2023 09:57:43 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Sat, 06 Jan 2024 15:36:10 +0000
+
+libde265 (1.0.15-1) unstable; urgency=medium
+
+  * New upstream version 1.0.15
+  * Fixes CVE-2023-49465, CVE-2023-49467, CVE-2023-49468.
+  * Add patch to fix "Libs.private" in libde265.pc.
+
+ -- Joachim Bauch <bauch@struktur.de>  Thu, 21 Dec 2023 09:29:24 +0100
 
 libde265 (1.0.13-1) unstable; urgency=medium
 

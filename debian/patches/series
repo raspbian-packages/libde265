@@ -3,4 +3,5 @@ disable_tools.patch
 reject_reference_pics_from_different_sps.patch
 use_sps_from_the_image.patch
 recycle_sps_if_possible.patch
+fix-private-libs-pc.patch
 disable-neon.patch
