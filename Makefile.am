@@ -8,12 +8,6 @@ if ENABLE_DEC265
 SUBDIRS+=dec265
 endif
 
-if ENABLE_ENCODER
-SUBDIRS+=enc265
-endif
-
-SUBDIRS+=tools
-
 # Remove acceleration-speed test program, because it needs many internal functions (that have to be dllexported).
 # On the other hand, that tool was only used for development.
 # SUBDIRS+=acceleration-speed
