@@ -5,6 +5,7 @@ libde265.so.0 libde265-0 #MINVER#
  (optional|c++|regex)"^std::_Sp_make_shared_tag.*@Base$" 1.0.4
  (optional|c++|regex)"^std::__cxx11::basic_stringbuf<.*@Base$" 1.0.2
  (optional|c++|regex)"^std::vector<.*@Base$" 1.0.2
+ (optional|c++|regex)"^std::_Vector_base<.*@Base$" 1.0.16
  (optional|c++|regex)"^typeinfo for std::.*@Base$" 1.0.2
  (optional|c++|regex)"^typeinfo name for std::.*@Base$" 1.0.2
  (optional|c++|regex)"^void std::vector<.*@Base$" 1.0.2

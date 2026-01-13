@@ -8,7 +8,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 
 override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	./debian/tests/test-decode
+endif
 	dh_auto_test
 
 override_dh_auto_install:

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Multimedia Maintainers <debian-multimedia@lists.debian.org>
 Uploaders:
  Alessio Treglia <alessio@debian.org>,
- Joachim Bauch <bauch@struktur.de>
+ Joachim Bauch <fancycode@debian.org>
 Build-Depends:
  debhelper-compat (= 13),
  qtbase5-dev | libqt4-dev,
@@ -12,9 +12,9 @@ Build-Depends:
  libswscale-dev,
  libx11-dev,
  libxext-dev,
- pkg-config
+ pkgconf
 Rules-Requires-Root: no
-Standards-Version: 4.6.2
+Standards-Version: 4.7.2
 Homepage: https://github.com/strukturag/libde265
 Vcs-Git: https://salsa.debian.org/multimedia-team/libde265.git
 Vcs-Browser: https://salsa.debian.org/multimedia-team/libde265

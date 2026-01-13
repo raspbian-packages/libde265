@@ -10,13 +10,13 @@ Forwarded: https://github.com/strukturag/libde265/pull/439
  configure.ac | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/configure.ac b/configure.ac
-index 770f5025..798e9a2c 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -104,6 +104,9 @@ AC_FUNC_ERROR_AT_LINE
- # AC_FUNC_REALLOC
- AC_FUNC_MKTIME
+Index: libde265/configure.ac
+===================================================================
+--- libde265.orig/configure.ac
++++ libde265/configure.ac
+@@ -105,6 +105,9 @@ AC_FUNC_MKTIME
+ LIBS_PRIVATE="$LIBS -lstdc++"
+ AC_SUBST(LIBS_PRIVATE)
  
 +LIBS_PRIVATE="$LIBS -lstdc++"
 +AC_SUBST(LIBS_PRIVATE)

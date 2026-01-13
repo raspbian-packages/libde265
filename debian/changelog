@@ -1,9 +1,22 @@
-libde265 (1.0.15-1+rpi1) trixie-staging; urgency=medium
+libde265 (1.0.16-1+rpi1) forky-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Sat, 06 Jan 2024 15:36:10 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Tue, 13 Jan 2026 19:25:13 +0000
+
+libde265 (1.0.16-1) unstable; urgency=medium
+
+  * d/control: Change "Uploaders" to use my @debian.org address.
+  * New upstream version 1.0.16
+  * Refresh patches for new upstream version.
+  * d/control: Migrate from "pkg-config" to "pkgconf".
+  * Bump "Standards-Version" to 4.7.2
+  * d/copyright: Remove entry for file no longer present in upstream tarball.
+  * Ignore internal std:: symbol.
+  * d/rules: Check "DEB_BUILD_OPTIONS" before running tests.
+
+ -- Joachim Bauch <fancycode@debian.org>  Tue, 13 May 2025 09:32:27 +0200
 
 libde265 (1.0.15-1) unstable; urgency=medium
 

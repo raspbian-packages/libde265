@@ -10,7 +10,6 @@ Copyright:
 License: LGPL-3+
 
 Files: dec265/dec265.cc
- dec265/hdrcopy.cc
  dec265/sdl.cc
  dec265/sdl.hh
  enc265/enc265.cc

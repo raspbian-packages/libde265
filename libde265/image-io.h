@@ -31,7 +31,7 @@ class ImageSource
 {
  public:
   ImageSource();
-  virtual ~ImageSource() { }
+  virtual ~ImageSource();
 
   //enum ImageStatus { Available, Waiting, EndOfVideo };
 
@@ -57,8 +57,8 @@ class ImageSource_YUV : public ImageSource
   virtual de265_image* get_image(bool block=true);
   virtual void skip_frames(int n);
 
-  virtual int get_width() const { return width; }
-  virtual int get_height() const { return height; }
+  virtual int get_width() const;
+  virtual int get_height() const;
 
  private:
   FILE* mFH;
@@ -74,7 +74,7 @@ class ImageSource_YUV : public ImageSource
 class ImageSink
 {
  public:
-  virtual ~ImageSink() { }
+  virtual ~ImageSink();
 
   virtual void send_image(const de265_image* img) = 0;
 };
@@ -82,7 +82,7 @@ class ImageSink
 class ImageSink_YUV : public ImageSink
 {
  public:
-  ImageSink_YUV() : mFH(NULL) { }
+  ImageSink_YUV();
   ~ImageSink_YUV();
 
   bool set_filename(const char* filename);
@@ -98,7 +98,7 @@ class ImageSink_YUV : public ImageSink
 class PacketSink
 {
  public:
-  virtual ~PacketSink() { }
+  virtual ~PacketSink();
 
   virtual void send_packet(const uint8_t* data, int n) = 0;
 };
