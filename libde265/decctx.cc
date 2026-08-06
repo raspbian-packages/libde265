@@ -928,8 +928,6 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
       return err;
     }
 
-  this->img->add_slice_segment_header(shdr);
-
   skip_bits(&reader,1); // TODO: why?
   prepare_for_CABAC(&reader);
 
@@ -957,6 +955,13 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
 
   if ( ! image_units.empty() ) {
 
+    // Hand the slice header to the picture (which takes ownership and frees it
+    // on release). Only do this when there is an active image unit to decode
+    // the slice; otherwise the header would be retained on img->slices forever,
+    // which a crafted stream of non-first slice NALs can exploit to grow memory
+    // without bound.
+    this->img->add_slice_segment_header(shdr);
+
     slice_unit* sliceunit = new slice_unit(this);
     sliceunit->nal = nal;
     sliceunit->shdr = shdr;
@@ -966,6 +971,10 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
 
 
     image_units.back()->slice_units.push_back(sliceunit);
+  }
+  else {
+    nal_parser.free_NAL_unit(nal);
+    delete shdr;
   }
 
   bool did_work;
