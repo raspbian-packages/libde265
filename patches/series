@@ -1,0 +1,14 @@
+only_export_decoder_api.patch
+disable_tools.patch
+reject_reference_pics_from_different_sps.patch
+use_sps_from_the_image.patch
+recycle_sps_if_possible.patch
+fix-private-libs-pc.patch
+CVE-2025-61147.patch
+CVE-2024-38949_CVE-2024-38950.patch
+CVE-2026-45382.patch
+CVE-2026-45383.patch
+CVE-2026-49337.patch
+CVE-2026-49295.patch
+CVE-2026-49346.patch
+CVE-2026-54240_CVE-2026-54241.patch
