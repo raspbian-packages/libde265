@@ -1,0 +1,19 @@
+Description: Disable building of some internal tools that no longer link
+ because internal symbols are no longer exported.
+Author: Joachim Bauch <bauch@struktur.de>
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -8,13 +8,6 @@
+ SUBDIRS+=dec265
+ endif
+ 
+-if ENABLE_ENCODER
+-SUBDIRS+=enc265
+-endif
+-
+-SUBDIRS+=tools
+-SUBDIRS+=acceleration-speed
+-
+ if ENABLE_SHERLOCK265
+ SUBDIRS+=sherlock265
+ endif
