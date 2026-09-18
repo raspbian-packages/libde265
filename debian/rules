@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND = -DHAVE_VISIBILITY=1 -fvisibility=hidden
+export DEB_CXXFLAGS_MAINT_APPEND = -DHAVE_VISIBILITY=1 -fvisibility=hidden
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure --buildsystem=cmake -- \
+		-DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_HOST_MULTIARCH)" \
+		-DENABLE_SHERLOCK265=ON
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	cp $(CURDIR)/obj-$(DEB_HOST_GNU_TYPE)/dec265/dec265 $(CURDIR)/dec265/dec265
+	./debian/tests/test-decode
+endif
+	dh_auto_test
+
+override_dh_auto_install:
+	dh_auto_install
+	cd $(CURDIR)/debian/tmp/usr/bin/ && mv dec265 libde265-dec265
+	if [ -e "$(CURDIR)/debian/tmp/usr/bin/sherlock265" ]; then \
+		cd $(CURDIR)/debian/tmp/usr/bin/ && mv sherlock265 \
+			libde265-sherlock265; \
+	fi

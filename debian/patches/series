@@ -1,0 +1,4 @@
+only_export_decoder_api.patch
+reject_reference_pics_from_different_sps.patch
+use_sps_from_the_image.patch
+recycle_sps_if_possible.patch
