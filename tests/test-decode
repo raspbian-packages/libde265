@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+DECODE=/usr/bin/libde265-dec265
+if [ ! -f /usr/bin/libde265-dec265 ]; then
+    DECODE=./dec265/dec265
+fi 
+
+if [ ! -f $DECODE ]; then 
+    echo Decode utility not found
+    exit 1
+fi
+
+output=`mktemp`
+
+$DECODE -q -c -t 2 ./debian/tests/tree.h265 > $output 2>&1  
+
+if ! grep -L "nFrames decoded: 31" $output; then 
+    echo Decoding failed
+    cat $output
+    exit 255
+fi 
