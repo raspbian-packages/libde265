@@ -186,7 +186,7 @@ PacketSink_File::PacketSink_File()
 }
 
 
-LIBDE265_API PacketSink_File::~PacketSink_File()
+PacketSink_File::~PacketSink_File()
 {
   if (mFH) {
     fclose(mFH);
@@ -194,7 +194,7 @@ LIBDE265_API PacketSink_File::~PacketSink_File()
 }
 
 
-LIBDE265_API void PacketSink_File::set_filename(const char* filename)
+void PacketSink_File::set_filename(const char* filename)
 {
   assert(mFH==NULL);
 
@@ -202,7 +202,7 @@ LIBDE265_API void PacketSink_File::set_filename(const char* filename)
 }
 
 
-LIBDE265_API void PacketSink_File::send_packet(const uint8_t* data, int n)
+void PacketSink_File::send_packet(const uint8_t* data, int n)
 {
   uint8_t startCode[3];
   startCode[0] = 0;
