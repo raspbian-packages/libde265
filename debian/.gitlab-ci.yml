@@ -1,0 +1,14 @@
+# Copyright salsa-ci-team and others
+# SPDX-License-Identifier: FSFAP
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and
+# this notice are preserved. This file is offered as-is, without any warranty.
+
+include:
+  - https://salsa.debian.org/lts-team/pipeline/raw/master/vars/base.yml
+
+variables:
+  RELEASE: 'bookworm'
+  SALSA_CI_DISABLE_LINTIAN: 1
+  SALSA_CI_DISABLE_PIUPARTS: 1
+  SALSA_CI_DISABLE_REPROTEST: 1

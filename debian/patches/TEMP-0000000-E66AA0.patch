@@ -1,0 +1,58 @@
+Description: heap-use-after-free in decoder_context::reset() via dangling previous_slice_header
+ The issue does not have yet an CVE number assigned.
+Origin: https://github.com/strukturag/libde265/commit/07bc500d45f781a7e2915afb7eebc2d6d9a541c9
+Bug: https://github.com/strukturag/libde265/security/advisories/GHSA-mm7m-v26f-wf8x
+
+From 07bc500d45f781a7e2915afb7eebc2d6d9a541c9 Mon Sep 17 00:00:00 2001
+From: Dirk Farin <dirk.farin@gmail.com>
+Date: Wed, 2 Sep 2026 23:55:01 +0200
+Subject: [PATCH] Fix heap-use-after-free in decoder_context::reset()
+ (GHSA-mm7m-v26f-wf8x)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+decoder_context::reset() calls dpb.clear() which frees all de265_image objects
+and their owned slice_segment_header structs. However, reset() never nulls the
+previous_slice_header pointer, leaving a dangling reference into freed memory.
+
+When the next NAL unit after reset() is a dependent slice, slice_segment_header::read()
+at slice.cc:435 executes:
+  *this = *ctx->previous_slice_header;
+
+This copies from freed 1464-byte struct — heap-use-after-free (CWE-416).
+
+The in-stream case was already guarded by commit 12ba88ec (decctx.cc:556 nulls
+previous_slice_header on first slice of new picture). This fix applies the same
+invariant to the reset() path: only a slice header still retained by a live image
+may remain as previous_slice_header.
+---
+ libde265/decctx.cc | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+--- a/libde265/decctx.cc
++++ b/libde265/decctx.cc
+@@ -201,7 +201,6 @@
+   set_acceleration_functions(de265_acceleration_AUTO);
+ }
+ 
+-
+ decoder_context::decoder_context()
+ {
+   //memset(ctx, 0, sizeof(decoder_context));
+@@ -396,6 +395,15 @@
+ 
+   img = NULL;
+ 
++  // Drop the back-reference to the previous picture's slice header before the
++  // DPB is cleared below. dpb.clear() releases the images, which own and free
++  // their slice_segment_header structs (see de265_image::release()). Leaving
++  // previous_slice_header pointing into that freed storage lets a following
++  // dependent slice read from it (slice.cc: '*this = *ctx->previous_slice_header'),
++  // a heap-use-after-free. This mirrors the in-stream new-picture guard in
++  // read_slice_NAL(): only a slice header still retained by a live image may
++  // remain as previous_slice_header.
++  previous_slice_header = nullptr;
+ 
+   // TODO: remove all pending image_units
+ 
