@@ -1,0 +1,62 @@
+Description: Use sps of the image, not the sps of the pic parameter set (pps)
+ When decoding a slice, all decoding functions are using the sps of the target
+ image to determine the image properties, which are in the seqquence parameter
+ set) -- execpt generate_inter_prediction_samples(), which uses the sps from the
+ pps, which might have different properties and trick the decode to out-of-bound
+ memory accesses, leading to crashes.
+Origin: https://github.com/strukturag/libde265/pull/366
+From 36391cda3d4e4fb3269a2ce310e6e0f634729f0b Mon Sep 17 00:00:00 2001
+From: Tobias Frost <tobi@debian.org>
+Date: Mon, 12 Dec 2022 14:33:40 +0100
+Subject: [PATCH] Use the sps from the image
+
+(as e.g mc_chroma is using the sps to determine
+picture properties, like pic_width_in_luma_samples
+and pic_height_in_luma_samples, I *think* this is
+more correct.
+
+This PR is for discussion. (See #345.)
+It makes the failures go away, but that does not mean it's correct :)
+
+The following poc will be stop failing if (only) this
+patch is applied:
+
+ - poc2  #336 - CVE-2022-43238
+ - poc4  #338 - CVE-2022-43241
+ - poc6-1, poc6-2 #340 - CVE-2022-43242
+ - poc7-1, poc7-2  #341 - CVE-2022-43239
+ - poc8-1 #342 - CVE-2022-43244
+ - poc9-3 #343 - CVE-2022-43236
+ - poc10-2, poc10-3 #344 - CVE-2022-43237
+ - poc16 #350
+ - poc19 #353
+
+The following are still failing if only this patch is
+applied, but they stop failing if #365 is applied as well, but will
+still fail with ONLY #365 applied (IOW, both are needed)
+
+ - poc1  #335 - CVE-2022-43240
+ - poc3  #337 - CVE-2022-43235
+ - poc5   #339 - CVE-2022-43423
+ - poc9-1,poc9-2, poc9-4  #343 - CVE-2022-43236
+ - poc14  #348 - CVE-2022-43253
+ - poc15  #349 - CVE-2022-43248
+ - poc17-1, poc17-2  #351
+ - poc18 #352 - CVE-2022-43245
+---
+ libde265/motion.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: libde265/libde265/motion.cc
+===================================================================
+--- libde265.orig/libde265/motion.cc
++++ libde265/libde265/motion.cc
+@@ -290,7 +290,7 @@ void generate_inter_prediction_samples(b
+   int    stride[3];
+ 
+   const pic_parameter_set* pps = shdr->pps.get();
+-  const seq_parameter_set* sps = pps->sps.get();
++  const seq_parameter_set* sps = img->get_shared_sps().get();
+ 
+   if (sps->BitDepth_Y != img->get_bit_depth(0) ||
+       sps->BitDepth_C != img->get_bit_depth(1)) {

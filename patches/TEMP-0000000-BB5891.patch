@@ -1,0 +1,207 @@
+Description: Double Free / Use after Free
+ Concurrent Execution using Shared Resource with Imprope
+ Synchronization ('Race Condition') and Use After Free and Double Free in
+ libde265.
+ There is no CVE assigned yet.
+Origin: https://github.com/strukturag/libde265/commit/eb346780796055d9f9aac62d725d3170aa60c7b4
+Bug: https://github.com/strukturag/libde265/security/advisories/GHSA-xp3h-6f5r-8cxp
+Comment: As the version in bookworm does not have StatCoeff_models, those
+ patch parts have been omitted.
+
+From eb346780796055d9f9aac62d725d3170aa60c7b4 Mon Sep 17 00:00:00 2001
+From: Dirk Farin <dirk.farin@gmail.com>
+Date: Wed, 2 Sep 2026 20:09:20 +0200
+Subject: [PATCH] Fix WPP CABAC context handoff race (GHSA-xp3h-6f5r-8cxp)
+
+In WPP-threaded decoding, each CTB row task hands its saved CABAC
+context (imgunit->ctx_models[row]) to the row below through
+context_model_table, a hand-rolled refcounted handle whose model and
+refcnt pointers are mutated together by copy, assignment, release(),
+and decouple(). The producer/consumer handoff relied on
+wait_for_progress()/set_progress() to order the accesses, but that
+lock's fast path read a plain non-atomic int with no acquire/release
+barrier, so writes to a row slot were not reliably published across
+threads. Under a crafted stream this let two tasks touch the same
+slot's ownership metadata concurrently, corrupting it and causing
+heap-use-after-free / double-free (confirmed via AddressSanitizer,
+reproducing the double-free in context_model_table::release() at
+the exact reported sites).
+
+Add a mutex to image_unit guarding the whole copy/release (consumer)
+and assign/decouple (producer) sequence for a row slot, so ownership
+transitions are mutually exclusive. Also make de265_progress_lock's
+progress counter atomic with acquire/release ordering, closing the
+underlying missing-barrier gap that the same fast path exposes to
+every other wait_for_progress() consumer (deblocking, SAO, motion
+readiness).
+
+Verified: unpatched build reliably double-frees under ASan within a
+few hundred fuzzer iterations; the fixed build stayed clean across
+thousands of iterations of the same reproducers. Decode output is
+unchanged (girlshy.h265 hash matches single- and multi-threaded).
+---
+ libde265/decctx.h   | 19 +++++++++++++++++++
+ libde265/slice.cc   | 40 +++++++++++++++++++++++++++++-----------
+ libde265/threads.cc | 18 +++++++++++-------
+ libde265/threads.h  | 11 +++++++++--
+ 4 files changed, 68 insertions(+), 20 deletions(-)
+
+--- a/libde265/decctx.h
++++ b/libde265/decctx.h
+@@ -36,6 +36,7 @@
+ #include "libde265/nal-parser.h"
+ 
+ #include <memory>
++#include <mutex>
+ 
+ #define DE265_MAX_VPS_SETS 16   // this is the maximum as defined in the standard
+ #define DE265_MAX_SPS_SETS 16   // this is the maximum as defined in the standard
+@@ -267,6 +268,22 @@
+      There is one saved model for the initialization of each CTB row.
+      The array is unused for non-WPP streams. */
+   std::vector<context_model_table> ctx_models;  // TODO: move this into image ?
++
++  /* Serializes the producer/consumer handoff of the saved WPP row state
++     (ctx_models[] together with StatCoeff_models[]).
++     Each context_model_table is a reference-counted handle whose model
++     pointer, refcnt pointer, and the referenced count are all mutated
++     together by copy construction, assignment, release(), and decouple().
++     In WPP mode the producer row task stores its context into ctx_models[row]
++     while the consumer row task below copies it out and releases the slot.
++     The progress-lock fast path does not provide an acquire/release barrier
++     around this compound object, so without an explicit lock the two tasks
++     can concurrently mutate the same ownership metadata, corrupting it and
++     causing use-after-free / double-free (GHSA-xp3h-6f5r-8cxp).
++     Holding this mutex across the whole copy/assign/release/decouple of a
++     row slot (on both the producer and consumer side) both excludes
++     concurrent mutation and publishes the writes to the other thread. */
++  std::mutex ctx_models_mutex;
+ };
+ 
+ 
+--- a/libde265/slice.cc
++++ b/libde265/slice.cc
+@@ -4710,9 +4710,18 @@
+         // we have to wait until the context model data is there
+         tctx->img->wait_for_progress(tctx->task, 1,tctx->CtbY-1,CTB_PROGRESS_PREFILTER);
+ 
+-        // copy CABAC model from previous CTB row
+-        tctx->ctx_model = tctx->imgunit->ctx_models[(tctx->CtbY-1)];
+-        tctx->imgunit->ctx_models[(tctx->CtbY-1)].release(); // not used anymore
++        // Copy CABAC model from the previous CTB row.
++        // The whole handoff of this row slot must be serialized against the
++        // producer that stores into the same slot, because context_model_table
++        // is a reference-counted handle whose ownership metadata is mutated as
++        // a unit by the copy/release below (GHSA-xp3h-6f5r-8cxp).
++        {
++          std::lock_guard<std::mutex> lock(tctx->imgunit->ctx_models_mutex);
++
++          // copy CABAC model from previous CTB row
++          tctx->ctx_model = tctx->imgunit->ctx_models[(tctx->CtbY-1)];
++          tctx->imgunit->ctx_models[(tctx->CtbY-1)].release(); // not used anymore
++        }
+       }
+       else {
+         tctx->img->wait_for_progress(tctx->task, 0,tctx->CtbY-1,CTB_PROGRESS_PREFILTER);
+@@ -4766,9 +4775,18 @@
+           return Decode_Error;
+         }
+ 
+-        tctx->imgunit->ctx_models[ctby] = tctx->ctx_model;
+-        tctx->imgunit->ctx_models[ctby].decouple(); // store an independent copy
+-      }
++        // Store an independent copy of the CABAC model (and StatCoeff state) for
++        // the row below to pick up. Serialize the whole store against the
++        // consumer that copies/releases the same slot: context_model_table is a
++        // reference-counted handle whose ownership metadata is mutated as a unit
++        // by the assignment/decouple below (GHSA-xp3h-6f5r-8cxp).
++        {
++          std::lock_guard<std::mutex> lock(tctx->imgunit->ctx_models_mutex);
++
++          tctx->imgunit->ctx_models[ctby] = tctx->ctx_model;
++          tctx->imgunit->ctx_models[ctby].decouple(); // store an independent copy
++        }
++     }
+ 
+ 
+     // end of slice segment ?
+--- a/libde265/threads.cc
++++ b/libde265/threads.cc
+@@ -87,7 +87,7 @@
+ 
+ de265_progress_lock::de265_progress_lock()
+ {
+-  mProgress = 0;
++  mProgress.store(0, std::memory_order_relaxed);
+ 
+   de265_mutex_init(&mutex);
+   de265_cond_init(&cond);
+@@ -101,12 +101,15 @@
+ 
+ void de265_progress_lock::wait_for_progress(int progress)
+ {
+-  if (mProgress >= progress) {
++  // Fast path: acquire-load pairs with the release-store in set_progress()/
++  // increase_progress() so that everything the signalling thread wrote before
++  // reaching this progress value is visible once we observe it here.
++  if (mProgress.load(std::memory_order_acquire) >= progress) {
+     return;
+   }
+ 
+   de265_mutex_lock(&mutex);
+-  while (mProgress < progress) {
++  while (mProgress.load(std::memory_order_acquire) < progress) {
+     de265_cond_wait(&cond, &mutex);
+   }
+   de265_mutex_unlock(&mutex);
+@@ -116,8 +119,8 @@
+ {
+   de265_mutex_lock(&mutex);
+ 
+-  if (progress>mProgress) {
+-    mProgress = progress;
++  if (progress > mProgress.load(std::memory_order_relaxed)) {
++    mProgress.store(progress, std::memory_order_release);
+ 
+     de265_cond_broadcast(&cond, &mutex);
+   }
+@@ -129,7 +132,8 @@
+ {
+   de265_mutex_lock(&mutex);
+ 
+-  mProgress += progress;
++  mProgress.store(mProgress.load(std::memory_order_relaxed) + progress,
++                  std::memory_order_release);
+   de265_cond_broadcast(&cond, &mutex);
+ 
+   de265_mutex_unlock(&mutex);
+@@ -137,7 +141,7 @@
+ 
+ int  de265_progress_lock::get_progress() const
+ {
+-  return mProgress;
++  return mProgress.load(std::memory_order_acquire);
+ }
+ 
+ 
+--- a/libde265/threads.h
++++ b/libde265/threads.h
+@@ -81,10 +81,16 @@
+   void set_progress(int progress);
+   void increase_progress(int progress);
+   int  get_progress() const;
+-  void reset(int value=0) { mProgress=value; }
++  void reset(int value=0) { mProgress.store(value, std::memory_order_release); }
+ 
+ private:
+-  int mProgress;
++  // Read lock-free on the fast paths of wait_for_progress()/get_progress()
++  // while written under 'mutex'. It must be atomic so those reads are not a
++  // data race, and it carries acquire/release ordering so that the state a
++  // producer wrote before signalling progress (e.g. the saved WPP row context)
++  // is published to a consumer that observes the progress value without taking
++  // the mutex (GHSA-xp3h-6f5r-8cxp).
++  std::atomic<int> mProgress;
+ 
+   // private data
+ 
