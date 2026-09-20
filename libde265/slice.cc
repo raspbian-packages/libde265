@@ -4710,9 +4710,18 @@ enum DecodeResult decode_substream(thread_context* tctx,
         // we have to wait until the context model data is there
         tctx->img->wait_for_progress(tctx->task, 1,tctx->CtbY-1,CTB_PROGRESS_PREFILTER);
 
-        // copy CABAC model from previous CTB row
-        tctx->ctx_model = tctx->imgunit->ctx_models[(tctx->CtbY-1)];
-        tctx->imgunit->ctx_models[(tctx->CtbY-1)].release(); // not used anymore
+        // Copy CABAC model from the previous CTB row.
+        // The whole handoff of this row slot must be serialized against the
+        // producer that stores into the same slot, because context_model_table
+        // is a reference-counted handle whose ownership metadata is mutated as
+        // a unit by the copy/release below (GHSA-xp3h-6f5r-8cxp).
+        {
+          std::lock_guard<std::mutex> lock(tctx->imgunit->ctx_models_mutex);
+
+          // copy CABAC model from previous CTB row
+          tctx->ctx_model = tctx->imgunit->ctx_models[(tctx->CtbY-1)];
+          tctx->imgunit->ctx_models[(tctx->CtbY-1)].release(); // not used anymore
+        }
       }
       else {
         tctx->img->wait_for_progress(tctx->task, 0,tctx->CtbY-1,CTB_PROGRESS_PREFILTER);
@@ -4766,9 +4775,18 @@ enum DecodeResult decode_substream(thread_context* tctx,
           return Decode_Error;
         }
 
-        tctx->imgunit->ctx_models[ctby] = tctx->ctx_model;
-        tctx->imgunit->ctx_models[ctby].decouple(); // store an independent copy
-      }
+        // Store an independent copy of the CABAC model (and StatCoeff state) for
+        // the row below to pick up. Serialize the whole store against the
+        // consumer that copies/releases the same slot: context_model_table is a
+        // reference-counted handle whose ownership metadata is mutated as a unit
+        // by the assignment/decouple below (GHSA-xp3h-6f5r-8cxp).
+        {
+          std::lock_guard<std::mutex> lock(tctx->imgunit->ctx_models_mutex);
+
+          tctx->imgunit->ctx_models[ctby] = tctx->ctx_model;
+          tctx->imgunit->ctx_models[ctby].decouple(); // store an independent copy
+        }
+     }
 
 
     // end of slice segment ?
