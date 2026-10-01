@@ -96,6 +96,80 @@ bool SDL_YUV_Display::init(int frame_width, int frame_height, enum SDL_Chroma ch
   return true;
 }
 
+
+
+bool SDL_YUV_Display::resize(int frame_width, int frame_height, enum SDL_Chroma chroma)
+{
+  if (!mWindowOpen) {
+    return init(frame_width, frame_height, chroma);
+  }
+
+  // reduce image size to a multiple of 8, same rounding as init()
+  frame_width  &= ~7;
+  frame_height &= ~7;
+
+  if (frame_width == rect.w && frame_height == rect.h && mChroma == chroma) {
+    return true;
+  }
+
+  mChroma = chroma;
+
+  // The overlay is tied to the old dimensions/pixel format; it has to be
+  // freed and recreated at the new size (SDL 1.2 has no in-place resize).
+  if (mYUVOverlay) {
+    SDL_FreeYUVOverlay(mYUVOverlay);
+    mYUVOverlay = NULL;
+  }
+
+  const SDL_VideoInfo* info = SDL_GetVideoInfo();
+  if (!info) {
+    printf("SDL_GetVideoInfo() failed: %s\n", SDL_GetError());
+    mWindowOpen = false;
+    return false;
+  }
+
+  Uint8 bpp = info->vfmt->BitsPerPixel;
+
+  Uint32 vflags;
+  if (info->hw_available)
+    vflags = SDL_HWSURFACE;
+  else
+    vflags = SDL_SWSURFACE;
+
+  mScreen = SDL_SetVideoMode(frame_width, frame_height, bpp, vflags);
+  if (mScreen == NULL) {
+    printf("SDL: Couldn't set video mode to %dx%d,%d bpp: %s",
+           frame_width, frame_height, bpp, SDL_GetError());
+    mWindowOpen = false;
+    return false;
+  }
+
+  uint32_t pixelFormat;
+  switch (mChroma) {
+  case SDL_CHROMA_MONO: pixelFormat = SDL_YV12_OVERLAY; break;
+  case SDL_CHROMA_420:  pixelFormat = SDL_YV12_OVERLAY; break;
+  case SDL_CHROMA_422:  pixelFormat = SDL_YUY2_OVERLAY; break;
+  case SDL_CHROMA_444:  pixelFormat = SDL_YV12_OVERLAY; break;
+  default:              pixelFormat = SDL_YV12_OVERLAY; break;
+  }
+
+  mYUVOverlay = SDL_CreateYUVOverlay(frame_width, frame_height, pixelFormat, mScreen);
+  if (mYUVOverlay == NULL) {
+    printf("SDL: Couldn't recreate SDL YUV overlay: %s", SDL_GetError());
+    mWindowOpen = false;
+    return false;
+  }
+
+  rect.x = 0;
+  rect.y = 0;
+  rect.w = frame_width;
+  rect.h = frame_height;
+
+  return true;
+}
+
+
+
 void SDL_YUV_Display::display(const unsigned char *Y,
                               const unsigned char *U,
                               const unsigned char *V,

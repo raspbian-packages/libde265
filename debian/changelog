@@ -1,9 +1,32 @@
-libde265 (1.0.11-1+rpi1+deb12u2) bookworm-staging; urgency=medium
+libde265 (1.0.11-1+rpi1+deb12u3) bookworm-staging; urgency=medium
 
   [changes brought forward from 1.0.2-1+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sun, 04 Oct 2015 21:44:10 +0000]
   * Disable neon.
 
- -- Raspbian forward porter <root@raspbian.org>  Mon, 18 May 2026 21:34:11 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 01 Oct 2026 22:41:52 +0000
+
+libde265 (1.0.11-1+deb12u3) bookworm-security; urgency=high
+
+  * Non-maintainer upload by the LTS Team.
+  * Backport fixes for:
+    - CVE-2023-51792 - Buffer-Overflow
+    - CVE-2026-33164 - DoS (crash) (Closes: #1131469)
+    - CVE-2026-33165 - heap out-of-bounds write (Closes: #1131468)
+    - CVE-2024-38949 - Heap Buffer Overflow (Closes: #1074416)
+    - CVE-2024-38950 - Heap Buffer Overflow (same bug/patch as 2024-38949)
+    - CVE-2024-45382 - Heap Buffer Read Overflow
+    - CVE-2026-45383 - Heap Buffer Read Overflow
+    - CVE-2026-49295 - Out-of-bounds write (Closes: #1140431)
+    - CVE-2026-49337 - Unbounded memory accumulation (also #1140431)
+    - CVE-2026-49346 - Heap buffer overflow (also #1140431)
+    - CVE-2026-54240 - Heap Buffer Overflow
+    - CVE-2026-54241 - Heap Buffer Overflow
+  * Backport security fixes without CVE assigned yet:
+    - GHSA-xp3h-6f5r-8cxp - Use after free / double free
+      in concurrent execution enviornments (race conditions)
+    - GHSA-mm7m-v26f-wf8x - heap-use-after-free
+
+ -- Tobias Frost <tobi@debian.org>  Sun, 20 Sep 2026 13:47:08 +0200
 
 libde265 (1.0.11-1+deb12u2) bookworm; urgency=medium
 

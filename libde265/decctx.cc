@@ -201,7 +201,6 @@ base_context::base_context()
   set_acceleration_functions(de265_acceleration_AUTO);
 }
 
-
 decoder_context::decoder_context()
 {
   //memset(ctx, 0, sizeof(decoder_context));
@@ -396,6 +395,15 @@ void decoder_context::reset()
 
   img = NULL;
 
+  // Drop the back-reference to the previous picture's slice header before the
+  // DPB is cleared below. dpb.clear() releases the images, which own and free
+  // their slice_segment_header structs (see de265_image::release()). Leaving
+  // previous_slice_header pointing into that freed storage lets a following
+  // dependent slice read from it (slice.cc: '*this = *ctx->previous_slice_header'),
+  // a heap-use-after-free. This mirrors the in-stream new-picture guard in
+  // read_slice_NAL(): only a slice header still retained by a live image may
+  // remain as previous_slice_header.
+  previous_slice_header = nullptr;
 
   // TODO: remove all pending image_units
 
@@ -927,8 +935,6 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
       return err;
     }
 
-  this->img->add_slice_segment_header(shdr);
-
   skip_bits(&reader,1); // TODO: why?
   prepare_for_CABAC(&reader);
 
@@ -956,6 +962,13 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
 
   if ( ! image_units.empty() ) {
 
+    // Hand the slice header to the picture (which takes ownership and frees it
+    // on release). Only do this when there is an active image unit to decode
+    // the slice; otherwise the header would be retained on img->slices forever,
+    // which a crafted stream of non-first slice NALs can exploit to grow memory
+    // without bound.
+    this->img->add_slice_segment_header(shdr);
+
     slice_unit* sliceunit = new slice_unit(this);
     sliceunit->nal = nal;
     sliceunit->shdr = shdr;
@@ -965,6 +978,10 @@ de265_error decoder_context::read_slice_NAL(bitreader& reader, NAL_unit* nal, na
 
 
     image_units.back()->slice_units.push_back(sliceunit);
+  }
+  else {
+    nal_parser.free_NAL_unit(nal);
+    delete shdr;
   }
 
   bool did_work;
@@ -1290,6 +1307,10 @@ de265_error decoder_context::decode_slice_unit_WPP(image_unit* imgunit,
   int ctbAddrRS = shdr->slice_segment_address;
   int ctbRow    = ctbAddrRS / ctbsWidth;
 
+  if (ctbRow + nRows > img->get_sps().PicHeightInCtbsY) {
+    return DE265_WARNING_SLICEHEADER_INVALID;
+  }
+
   for (int entryPt=0;entryPt<nRows;entryPt++) {
     // entry points other than the first start at CTB rows
     if (entryPt>0) {
@@ -1316,6 +1337,11 @@ de265_error decoder_context::decode_slice_unit_WPP(image_unit* imgunit,
     tctx->img     = img;
     tctx->imgunit = imgunit;
     tctx->sliceunit= sliceunit;
+
+    if ((size_t)ctbAddrRS >= pps.CtbAddrRStoTS.size()) {
+      err = DE265_WARNING_SLICEHEADER_INVALID;
+      break;
+    }
     tctx->CtbAddrInTS = pps.CtbAddrRStoTS[ctbAddrRS];
 
     init_thread_context(tctx);
@@ -1393,6 +1419,12 @@ de265_error decoder_context::decode_slice_unit_tiles(image_unit* imgunit,
 
   // first CTB in this slice
   int ctbAddrRS = shdr->slice_segment_address;
+
+  // pps.TileIdRS and pps.CtbAddrRStoTS are both sized to PicSizeInCtbsY in
+  // set_derived_values(), so one bound covers both accesses below.
+  if ((size_t)ctbAddrRS >= pps.CtbAddrRStoTS.size()) {
+    return DE265_WARNING_SLICEHEADER_INVALID;
+  }
   int tileID = pps.TileIdRS[ctbAddrRS];
 
   for (int entryPt=0;entryPt<nTiles;entryPt++) {
@@ -1408,6 +1440,11 @@ de265_error decoder_context::decode_slice_unit_tiles(image_unit* imgunit,
       int ctbX = pps.colBd[tileID % pps.num_tile_columns];
       int ctbY = pps.rowBd[tileID / pps.num_tile_columns];
       ctbAddrRS = ctbY * ctbsWidth + ctbX;
+
+      if ((size_t)ctbAddrRS >= pps.CtbAddrRStoTS.size()) {
+        err = DE265_WARNING_SLICEHEADER_INVALID;
+        break;
+      }
     }
 
     // set thread context

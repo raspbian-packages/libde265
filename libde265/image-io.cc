@@ -73,7 +73,7 @@ de265_image* ImageSource_YUV::read_next_image()
   // --- load image ---
 
   uint8_t* p;
-  int stride;
+  ptrdiff_t stride;
 
   p = img->get_image_plane(0);  stride = img->get_image_stride(0);
   for (int y=0;y<height;y++) {
@@ -154,7 +154,7 @@ void ImageSink_YUV::send_image(const de265_image* img)
   // --- write image ---
 
   const uint8_t* p;
-  int stride;
+  ptrdiff_t stride;
 
   int width = img->get_width();
   int height= img->get_height();
